@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- USB OBD2 Adapter Vendor/Product IDs -->
+    <usb-device vendor-id="0x067b" product-id="0x2303" />  <!-- Prolific Serial Adapter -->
+    <usb-device vendor-id="0x10c4" product-id="0xea60" />  <!-- Silicon Labs CP2102 -->
+    <usb-device vendor-id="0x0403" product-id="0x6001" />  <!-- FTDI FT232 -->
+    <usb-device vendor-id="0x1a86" product-id="0x7523" />  <!-- CH340/CH341 -->
+</resources>
