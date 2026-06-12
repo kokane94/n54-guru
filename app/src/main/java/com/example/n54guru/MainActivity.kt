@@ -9,25 +9,34 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.n54guru.ai.AdvancedDiagnosticAI
-import com.example.n54guru.models.*
+import com.example.n54guru.models.OBDParameter
+import com.example.n54guru.models.ElectricalParameter
+import com.example.n54guru.models.OBDLog
+import com.example.n54guru.models.DiagnosticAlert
+import com.example.n54guru.models.AlertSeverity
 import com.example.n54guru.services.OBD2Service
 import com.example.n54guru.services.VoiceCommentaryService
+import com.example.n54guru.services.PartFinderService
+import com.example.n54guru.models.PartSearchResult
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var obdService: OBD2Service
     private lateinit var voiceService: VoiceCommentaryService
     private val ai = AdvancedDiagnosticAI()
+    private lateinit var partFinderService: PartFinderService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         obdService = OBD2Service(this)
         voiceService = VoiceCommentaryService(this)
+        partFinderService = PartFinderService()
 
         setContent {
-            N54GuruApp(obdService, voiceService, ai)
+            N54GuruApp(obdService, voiceService, ai, partFinderService)
         }
     }
 
@@ -39,9 +48,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun N54GuruApp(obd: OBD2Service, voice: VoiceCommentaryService, ai: AdvancedDiagnosticAI) {
+fun N54GuruApp(obd: OBD2Service, voice: VoiceCommentaryService, ai: AdvancedDiagnosticAI, partFinder: PartFinderService) {
     var data by remember { mutableStateOf(mapOf<String, OBDParameter>()) }
+    var electricalData by remember { mutableStateOf(mapOf<String, ElectricalParameter>()) }
     var alerts by remember { mutableStateOf(listOf<DiagnosticAlert>()) }
+    var historicalData by remember { mutableStateOf(listOf<OBDLog>()) }
+    var searchQuery by remember { mutableStateOf("") }
+    var partSearchResults by remember { mutableStateOf(listOf<PartSearchResult>()) }
     var isConnected by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -50,8 +63,10 @@ fun N54GuruApp(obd: OBD2Service, voice: VoiceCommentaryService, ai: AdvancedDiag
             if (success) {
                 while (true) {
                     data = obd.readEngineData()
+                    electricalData = obd.readElectricalData() // Assuming a new method for electrical data
+                    historicalData = obd.getHistoricalData()
                     val engineMap = data.mapValues { it.value }
-                    alerts = ai.analyzeAllSystems(engineMap, emptyMap(), emptyList())
+                    alerts = ai.analyzeAllSystems(engineMap, electricalData, historicalData)
                     alerts.firstOrNull()?.let { voice.speakAlert(it) }
                     delay(2500)
                 }
@@ -80,13 +95,51 @@ fun N54GuruApp(obd: OBD2Service, voice: VoiceCommentaryService, ai: AdvancedDiag
 
                 Spacer(Modifier.height(16.dp))
 
+                // Part Finder UI
+                Spacer(Modifier.height(16.dp))
+                Text("Part Finder", style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search for parts (e.g., \'N54 HPFP\')") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = {
+                    // Launch coroutine to perform search
+                    obd.scope.launch {
+                        partSearchResults = partFinder.searchAliExpress(searchQuery) + partFinder.searchAmazon(searchQuery) + partFinder.searcheBay(searchQuery)
+                    }
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Search Parts")
+                }
+                Spacer(Modifier.height(16.dp))
+
+                if (partSearchResults.isNotEmpty()) {
+                    Text("Search Results", style = MaterialTheme.typography.titleMedium)
+                    partSearchResults.forEach { result ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        ) {
+                            Column(Modifier.padding(16.dp)) {
+                                Text(result.name, style = MaterialTheme.typography.titleMedium)
+                                Text("Price: ${result.price}")
+                                Text("Source: ${result.source}")
+                                Text("Link: ${result.link}")
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
+
                 if (alerts.isNotEmpty()) {
                     Text("AI Alerts", style = MaterialTheme.typography.titleMedium)
                     alerts.forEach { alert ->
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = if (alert.severity == AlertSeverity.CRITICAL) 
+                                containerColor = if (alert.severity == AlertSeverity.CRITICAL)
                                     MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
                             )
                         ) {
