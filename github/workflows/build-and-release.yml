@@ -1,0 +1,120 @@
+name: Build and Release APK
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Fix Git line endings (CRITICAL FIX)
+        run: |
+          git config core.autocrlf false
+          git rm --cached -r .
+          git reset --hard HEAD
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Make Gradle executable and fix line endings
+        run: |
+          dos2unix gradlew 2>/dev/null || sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+          file gradlew
+
+      - name: Validate Gradle wrapper
+        run: |
+          echo "Checking gradlew..."
+          head -5 gradlew
+          echo "---"
+
+      - name: Build APK (Debug)
+        run: |
+          ./gradlew clean build assembleDebug -x lint --stacktrace
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_OUTPUT
+
+      - name: Get app version
+        id: version
+        run: |
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle 2>/dev/null || grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts 2>/dev/null || echo "2.0.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check APK exists
+        run: |
+          echo "Checking for APK files..."
+          find app/build/outputs -name "*.apk" -type f
+          ls -lah app/build/outputs/apk/debug/ 2>/dev/null || echo "No debug APK folder yet"
+
+      - name: Upload APK to Release (on main push)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
+        uses: softprops/action-gh-release@v1
+        with:
+          files: app/build/outputs/apk/debug/app-debug.apk
+          tag_name: release-${{ steps.date.outputs.date }}
+          name: N54 Guru v${{ steps.version.outputs.version }} - ${{ steps.date.outputs.date }}
+          body: |
+            **Automated Build Release** ✅
+            
+            🚗 N54 Guru APK Build
+            📅 Built: ${{ steps.date.outputs.date }}
+            📦 Version: ${{ steps.version.outputs.version }}
+            
+            ### Installation:
+            1. Download `app-debug.apk` below
+            2. Transfer to Android phone
+            3. Tap APK to install (grant permissions)
+            4. Connect OBD2 K-CAN adapter
+            
+            ⚠️ Debug build - unsigned
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload APK as Artifact
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: n54-guru-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Build Summary on Success
+        if: success()
+        run: |
+          echo "✅ BUILD SUCCESSFUL!"
+          echo "📱 APK Ready for download"
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Build Failed - Debug Info
+        if: failure()
+        run: |
+          echo "❌ BUILD FAILED"
+          echo "---"
+          echo "Gradle version:"
+          ./gradlew --version
+          echo "---"
+          echo "Java version:"
+          java -version
+          echo "---"
+          echo "Build logs (last 100 lines):"
+          find app/build/outputs -name "*.txt" -type f -exec tail -20 {} \;
