@@ -1,4 +1,4 @@
-name: Build and Release APK
+name: Build and Release APK (LEGACY - Use build-apk.yml)
 
 on:
   push:
@@ -18,6 +18,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
       - name: Grant execute permission
         run: chmod +x ./gradlew

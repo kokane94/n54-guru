@@ -1,8 +1,8 @@
-name: Build N54 Guru APK
+name: Build N54 Guru APK (LEGACY - Use build-apk.yml)
 on:
   push:
     branches: [ main ]
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,6 +15,7 @@ jobs:
         with:
           java-version: '17'
           distribution: temurin
+          cache: gradle
 
       - name: Build APK
         run: |
@@ -24,6 +25,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: N54‑Guru‑Debug‑APK
-          path: app/build/outputs/apk/debug/app‑debug.apk
-
+          name: N54-Guru-Debug-APK
+          path: app/build/outputs/apk/debug/app-debug.apk

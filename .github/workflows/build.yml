@@ -1,4 +1,4 @@
-name: Build N54 Guru APK
+name: Build N54 Guru APK (LEGACY - Use build-apk.yml)
 on:
   push:
     branches: [ main ]
@@ -15,6 +15,7 @@ jobs:
         with:
           java-version: '17'
           distribution: temurin
+          cache: gradle
           
       - name: Build APK
         run: |

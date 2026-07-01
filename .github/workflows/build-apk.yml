@@ -27,29 +27,10 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Download Gradle Wrapper JAR if missing
-        run: |
-          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "⚠️  gradle-wrapper.jar missing! Downloading..."
-            mkdir -p gradle/wrapper
-            cd gradle/wrapper
-            # Download gradle 8.10.2 wrapper jar
-            curl -fsSL "https://github.com/gradle/gradle/releases/download/v8.10.2/gradle-8.10.2-wrapper.jar" -o gradle-wrapper.jar
-            if [ ! -f "gradle-wrapper.jar" ]; then
-              echo "❌ Failed to download from GitHub. Trying gradle wrapper download..."
-              cd ../../
-              gradle wrapper --gradle-version 8.10.2 || true
-            fi
-            cd ../../
-          else
-            echo "✅ gradle-wrapper.jar found"
-          fi
-          ls -lah gradle/wrapper/
-
-      - name: Verify Gradle Wrapper
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --version
+      - name: Setup Gradle using official action
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.10.2'
 
       - name: Validate project structure
         run: |
@@ -60,6 +41,14 @@ jobs:
           [ -d "app" ] && echo "✅ app directory found" || echo "❌ app directory missing"
           [ -f "app/build.gradle" ] && echo "✅ app/build.gradle found" || echo "❌ app/build.gradle missing"
 
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Verify Gradle Installation
+        run: |
+          ./gradlew --version
+          echo "✅ Gradle verified!"
+
       - name: Clean build
         run: |
           echo "🧹 Cleaning old builds..."
@@ -68,7 +57,7 @@ jobs:
       - name: Build APK (Debug)
         run: |
           echo "🔨 Building N54 Guru APK..."
-          ./gradlew assembleDebug -x lint --stacktrace --info
+          ./gradlew assembleDebug -x lint --stacktrace
 
       - name: Verify APK was created
         run: |
@@ -180,13 +169,10 @@ jobs:
           echo "============================================"
           echo ""
           echo "Gradle Version:"
-          ./gradlew --version || true
+          ./gradlew --version || echo "Gradle not available"
           echo ""
           echo "Java Version:"
           java -version
-          echo ""
-          echo "Gradle Wrapper Status:"
-          ls -lah gradle/wrapper/ || echo "gradle/wrapper directory not found"
           echo ""
           echo "Project Structure:"
           ls -la
