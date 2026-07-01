@@ -1,0 +1,197 @@
+name: Build N54 Guru APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Download Gradle Wrapper JAR if missing
+        run: |
+          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "⚠️  gradle-wrapper.jar missing! Downloading..."
+            mkdir -p gradle/wrapper
+            cd gradle/wrapper
+            # Download gradle 8.10.2 wrapper jar
+            curl -fsSL "https://github.com/gradle/gradle/releases/download/v8.10.2/gradle-8.10.2-wrapper.jar" -o gradle-wrapper.jar
+            if [ ! -f "gradle-wrapper.jar" ]; then
+              echo "❌ Failed to download from GitHub. Trying gradle wrapper download..."
+              cd ../../
+              gradle wrapper --gradle-version 8.10.2 || true
+            fi
+            cd ../../
+          else
+            echo "✅ gradle-wrapper.jar found"
+          fi
+          ls -lah gradle/wrapper/
+
+      - name: Verify Gradle Wrapper
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --version
+
+      - name: Validate project structure
+        run: |
+          echo "📂 Checking project structure..."
+          ls -la
+          [ -f "settings.gradle" ] && echo "✅ settings.gradle found" || echo "❌ settings.gradle missing"
+          [ -f "build.gradle" ] && echo "✅ build.gradle found" || echo "❌ build.gradle missing"
+          [ -d "app" ] && echo "✅ app directory found" || echo "❌ app directory missing"
+          [ -f "app/build.gradle" ] && echo "✅ app/build.gradle found" || echo "❌ app/build.gradle missing"
+
+      - name: Clean build
+        run: |
+          echo "🧹 Cleaning old builds..."
+          ./gradlew clean
+
+      - name: Build APK (Debug)
+        run: |
+          echo "🔨 Building N54 Guru APK..."
+          ./gradlew assembleDebug -x lint --stacktrace --info
+
+      - name: Verify APK was created
+        run: |
+          echo "🔍 Checking for APK..."
+          find . -name "*.apk" -type f -exec ls -lh {} \;
+          if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+            echo "✅ APK successfully created!"
+            ls -lh app/build/outputs/apk/debug/app-debug.apk
+          else
+            echo "❌ APK not found! Build may have failed."
+            exit 1
+          fi
+
+      - name: Get version and timestamp
+        id: metadata
+        run: |
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle 2>/dev/null || echo "2.0.0")
+          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+          BUILD_NUMBER=${{ github.run_number }}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Upload APK as Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: N54-Guru-Debug-APK-${{ steps.metadata.outputs.timestamp }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Create Release (on main push only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ steps.metadata.outputs.build_number }}-${{ steps.metadata.outputs.timestamp }}
+          name: 🚀 N54 Guru v${{ steps.metadata.outputs.version }} Build #${{ steps.metadata.outputs.build_number }}
+          body: |
+            # N54 Guru APK Build #${{ steps.metadata.outputs.build_number }}
+
+            ✅ **BUILD SUCCESSFUL**
+
+            ## 📋 Build Details
+            - **Version**: v${{ steps.metadata.outputs.version }}
+            - **Build #**: ${{ steps.metadata.outputs.build_number }}
+            - **Timestamp**: ${{ steps.metadata.outputs.timestamp }}
+            - **Commit**: ${{ github.sha }}
+
+            ## 📱 Installation Steps
+
+            1. **Download** the APK file below (`app-debug.apk`)
+            2. **Transfer** to your Android phone
+            3. **Enable** "Install from Unknown Sources" in Settings > Security
+            4. **Tap** the APK file to install
+            5. **Grant** necessary permissions when prompted
+            6. **Connect** your BMW OBD2 K-CAN adapter via USB OTG
+
+            ## 🎯 Ready to Test
+            Your APK is now ready for testing on your Android phone!
+
+            ### Features Available:
+            - ✅ Real-time N54 Engine Diagnostics
+            - ✅ Transmission Monitoring
+            - ✅ Convertible Roof Control
+            - ✅ AI Predictive Failure Detection
+            - ✅ Voice Commentary (12 Regional Accents)
+            - ✅ Smart Part Finder
+            - ✅ Data Logging & Export
+
+            ---
+            *Auto-generated release from GitHub Actions*
+          draft: false
+          prerelease: false
+          files: app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Success Summary
+        if: success()
+        run: |
+          echo "============================================"
+          echo "✅ BUILD COMPLETED SUCCESSFULLY!"
+          echo "============================================"
+          echo ""
+          echo "📦 Artifacts:"
+          echo "  - APK: app/build/outputs/apk/debug/app-debug.apk"
+          echo ""
+          echo "📥 Download:"
+          echo "  - GitHub Actions Artifacts (workflow page)"
+          echo "  - GitHub Releases (latest release)"
+          echo ""
+          echo "🔗 Release Link:"
+          echo "  https://github.com/${{ github.repository }}/releases/latest"
+          echo ""
+          echo "📱 Next Steps:"
+          echo "  1. Download app-debug.apk"
+          echo "  2. Transfer to Android phone"
+          echo "  3. Install APK"
+          echo "  4. Connect OBD2 adapter"
+          echo "  5. Launch app and test!"
+          echo ""
+          echo "============================================"
+
+      - name: Build Failure Debug Info
+        if: failure()
+        run: |
+          echo "============================================"
+          echo "❌ BUILD FAILED - DEBUG INFO"
+          echo "============================================"
+          echo ""
+          echo "Gradle Version:"
+          ./gradlew --version || true
+          echo ""
+          echo "Java Version:"
+          java -version
+          echo ""
+          echo "Gradle Wrapper Status:"
+          ls -lah gradle/wrapper/ || echo "gradle/wrapper directory not found"
+          echo ""
+          echo "Project Structure:"
+          ls -la
+          echo ""
+          echo "Last 50 lines of build output (if available):"
+          [ -f "build.log" ] && tail -50 build.log || echo "No build.log found"
+          echo ""
+          echo "============================================"
