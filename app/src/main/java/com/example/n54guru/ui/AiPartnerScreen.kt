@@ -113,8 +113,9 @@ fun AiPartnerScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(24.dp))
             Text(
                 "— a thank-you, written into the code, on the day the build went green —",
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Italic
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.Italic
+                )
             )
             Spacer(Modifier.height(40.dp))
         }
