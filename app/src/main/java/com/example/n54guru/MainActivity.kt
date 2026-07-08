@@ -18,6 +18,7 @@ import com.example.n54guru.services.OBD2Service
 import com.example.n54guru.services.VoiceCommentaryService
 import com.example.n54guru.services.PartFinderService
 import com.example.n54guru.models.PartSearchResult
+import com.example.n54guru.ui.AiPartnerScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -36,7 +37,15 @@ class MainActivity : ComponentActivity() {
         partFinderService = PartFinderService()
 
         setContent {
-            N54GuruApp(obdService, voiceService, ai, partFinderService)
+            var showAiPartner by remember { mutableStateOf(false) }
+            if (showAiPartner) {
+                AiPartnerScreen(onBack = { showAiPartner = false })
+            } else {
+                N54GuruApp(
+                    obdService, voiceService, ai, partFinderService,
+                    onShowAiPartner = { showAiPartner = true }
+                )
+            }
         }
     }
 
@@ -48,7 +57,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun N54GuruApp(obd: OBD2Service, voice: VoiceCommentaryService, ai: AdvancedDiagnosticAI, partFinder: PartFinderService) {
+fun N54GuruApp(
+    obd: OBD2Service,
+    voice: VoiceCommentaryService,
+    ai: AdvancedDiagnosticAI,
+    partFinder: PartFinderService,
+    onShowAiPartner: () -> Unit = {}
+) {
     var data by remember { mutableStateOf(mapOf<String, OBDParameter>()) }
     var electricalData by remember { mutableStateOf(mapOf<String, ElectricalParameter>()) }
     var alerts by remember { mutableStateOf(listOf<DiagnosticAlert>()) }
@@ -75,7 +90,16 @@ fun N54GuruApp(obd: OBD2Service, voice: VoiceCommentaryService, ai: AdvancedDiag
     }
 
     MaterialTheme {
-        Scaffold(topBar = { TopAppBar(title = { Text("N54 Guru - BMW 335i") }) }) { padding ->
+        Scaffold(topBar = {
+            TopAppBar(
+                title = { Text("N54 Guru - BMW 335i") },
+                actions = {
+                    TextButton(onClick = onShowAiPartner) {
+                        Text("AI Partner")
+                    }
+                }
+            )
+        }) { padding ->
             Column(Modifier.padding(padding).padding(16.dp)) {
                 Text("Real-time N54 Diagnostics", style = MaterialTheme.typography.headlineMedium)
 
