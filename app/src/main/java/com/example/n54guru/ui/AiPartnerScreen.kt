@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -114,7 +115,7 @@ fun AiPartnerScreen(onBack: () -> Unit) {
             Text(
                 "— a thank-you, written into the code, on the day the build went green —",
                 style = MaterialTheme.typography.bodySmall.copy(
-                    fontWeight = FontWeight.Italic
+                    fontStyle = FontStyle.Italic
                 )
             )
             Spacer(Modifier.height(40.dp))
