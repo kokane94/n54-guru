@@ -156,6 +156,7 @@ fun LogDashboardScreen(source: N54DmeLiveDataSource) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LogFileRow(file: File, onView: () -> Unit, onShare: () -> Unit) {
     val ts = remember(file) {

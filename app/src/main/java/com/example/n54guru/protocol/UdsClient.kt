@@ -166,7 +166,7 @@ class UdsClient(
             timeoutMs = timeoutMs
         )
         // Response: 0x41, pid, data...
-        if (response.size < 2 || response[0] != Obd2Pids.Mode.LIVE_DATA + 0x40) {
+        if (response.size < 2 || response[0] != (Obd2Pids.Mode.LIVE_DATA + 0x40).toByte()) {
             throw UdsException("Invalid OBD-II response")
         }
         return response.copyOfRange(2, response.size)
@@ -247,9 +247,9 @@ class UdsClient(
     }
 }
 
-class UdsException(message: String) : Exception(message)
+class UdsException(message: String) : RuntimeException(message)
 class NegativeResponseException(val originalSid: Byte, val nrc: Byte, val nrcDescription: String) :
-    UdsException("Negative response: $nrcDescription (NRC=0x%02X)".format(nrc))
+    RuntimeException("Negative response: $nrcDescription (NRC=0x%02X)".format(nrc))
 
 /**
  * Diagnostic Trouble Code — the actual code value plus its status bits.

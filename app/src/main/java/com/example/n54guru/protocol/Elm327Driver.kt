@@ -235,5 +235,5 @@ class UsbSerialPort(private val port: com.hoho.android.usbserial.driver.UsbSeria
         port.setParameters(baud, dataBits, stopBits, parity)
     }
     fun write(data: ByteArray): Boolean = try { port.write(data, 1000); true } catch (e: Exception) { false }
-    fun read(buffer: ByteArray, offset: Int, count: Int, timeoutMs: Int): Int = port.read(buffer, offset, count, timeoutMs)
+    fun read(buffer: ByteArray, offset: Int, count: Int, timeoutMs: Int): Int = try { port.read(buffer, offset, count, timeoutMs) } catch (e: Exception) { -1 }
 }
