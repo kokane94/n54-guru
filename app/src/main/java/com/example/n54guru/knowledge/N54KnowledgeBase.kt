@@ -338,6 +338,7 @@ private fun ArticleCard(article: N54KnowledgeBase.Article, onClick: () -> Unit) 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ArticleDetailScreen(articleId: String, onBack: () -> Unit) {
     val article = N54KnowledgeBase.ARTICLES.find { it.id == articleId }

@@ -10,6 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.n54guru.knowledge.AIDiagnosticsScreen
 import com.example.n54guru.knowledge.ArticleDetailScreen
 import com.example.n54guru.knowledge.FaultCodeDetailScreen

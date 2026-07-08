@@ -398,6 +398,7 @@ private fun FaultCodeCard(code: N54FaultCodes.FaultCode, onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FaultCodeDetailScreen(code: String, onBack: () -> Unit) {
     val codeData = CODE_DATA.find { it.code == code }
