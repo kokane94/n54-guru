@@ -40,6 +40,7 @@ class VoiceCommentaryService(private val context: Context) : OnInitListener {
             VoiceAccent.CANADIAN_MAPLE -> Locale("en", "CA")
             VoiceAccent.KIWI_BLOKE -> Locale("en", "NZ")
             VoiceAccent.GERMAN_BOSS -> Locale("de", "DE")
+            else -> Locale.ENGLISH
         }
 
         if (isInitialized) {
@@ -165,6 +166,7 @@ class VoiceCommentaryService(private val context: Context) : OnInitListener {
                 AlertSeverity.WARNING -> "Achtung! Ihr ${alert.component} ist nicht optimal. ${alert.reason}. Sie müssen es überprüfen! ${alert.recommendation}"
                 AlertSeverity.CRITICAL -> "Achtung! Achtung! Ihr ${alert.component} wird ausfallen! ${alert.reason}. Sofort reparieren! ${alert.recommendation}"
             }
+            else -> "${alert.severity.name}: ${alert.component}. ${alert.reason}. ${alert.recommendation}"
         }
     }
 

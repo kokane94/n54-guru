@@ -37,6 +37,8 @@ class DiagnosticAI {
                         confidence = 80f
                     )
                 )
+            } else {
+                // Coolant temp in normal range — no alert.
             }
         }
 

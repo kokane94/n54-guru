@@ -51,7 +51,7 @@ class PartFinderService {
             results.add(
                 PartSearchResult(
                     name = "[PLACEHOLDER] $sourceName Part for '$query'",
-                    price = "$XX.XX",
+                    price = "\$XX.XX",
                     link = searchUrl,
                     source = sourceName
                 )

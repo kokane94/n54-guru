@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun N54GuruApp(
     obd: OBD2Service,
@@ -78,8 +79,12 @@ fun N54GuruApp(
             if (success) {
                 while (true) {
                     data = obd.readEngineData()
-                    electricalData = obd.readElectricalData() // Assuming a new method for electrical data
-                    historicalData = obd.getHistoricalData()
+                    electricalData = obd.readElectricalData()
+                    // getHistoricalData is suspend — run it on the OBD service's
+                    // own scope so we don't block the Compose frame.
+                    obd.scope.launch {
+                        historicalData = obd.getHistoricalData()
+                    }
                     val engineMap = data.mapValues { it.value }
                     alerts = ai.analyzeAllSystems(engineMap, electricalData, historicalData)
                     alerts.firstOrNull()?.let { voice.speakAlert(it) }
