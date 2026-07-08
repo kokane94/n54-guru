@@ -2,8 +2,8 @@ package com.example.n54guru.services
 
 import android.content.Context
 import android.hardware.usb.UsbManager
-import com.github.mik3y.usbserial.driver.UsbSerialPort
-import com.github.mik3y.usbserial.driver.UsbSerialProber
+import com.hoho.android.usbserial.driver.UsbSerialPort
+import com.hoho.android.usbserial.driver.UsbSerialProber
 import kotlinx.coroutines.*
 import com.example.n54guru.models.OBDParameter
 import com.example.n54guru.models.ElectricalParameter

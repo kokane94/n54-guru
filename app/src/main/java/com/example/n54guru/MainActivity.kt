@@ -77,18 +77,19 @@ fun N54GuruApp(
         obd.connect { success ->
             isConnected = success
             if (success) {
-                while (true) {
-                    data = obd.readEngineData()
-                    electricalData = obd.readElectricalData()
-                    // getHistoricalData is suspend — run it on the OBD service's
-                    // own scope so we don't block the Compose frame.
-                    obd.scope.launch {
+                // Run the polling loop on the OBD service's IO scope.
+                // LaunchedEffect gives us a coroutine; we use it to call connect,
+                // then keep the work going on a long-lived scope outside Compose.
+                obd.scope.launch {
+                    while (true) {
+                        data = obd.readEngineData()
+                        electricalData = obd.readElectricalData()
                         historicalData = obd.getHistoricalData()
+                        val engineMap = data.mapValues { it.value }
+                        alerts = ai.analyzeAllSystems(engineMap, electricalData, historicalData)
+                        alerts.firstOrNull()?.let { voice.speakAlert(it) }
+                        delay(2500)
                     }
-                    val engineMap = data.mapValues { it.value }
-                    alerts = ai.analyzeAllSystems(engineMap, electricalData, historicalData)
-                    alerts.firstOrNull()?.let { voice.speakAlert(it) }
-                    delay(2500)
                 }
             }
         }

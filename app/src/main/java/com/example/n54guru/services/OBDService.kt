@@ -4,9 +4,9 @@ import android.content.Context
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
-import com.github.mik3y.usbserial.driver.UsbSerialDriver
-import com.github.mik3y.usbserial.driver.UsbSerialPort
-import com.github.mik3y.usbserial.driver.UsbSerialProber
+import com.hoho.android.usbserial.driver.UsbSerialDriver
+import com.hoho.android.usbserial.driver.UsbSerialPort
+import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.example.n54guru.models.OBDParameter
 import com.example.n54guru.models.N54Parameters
 import kotlinx.coroutines.*
