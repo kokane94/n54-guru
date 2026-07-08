@@ -58,7 +58,7 @@ class Elm327Driver(
         }
         try {
             val rawPort = driver.ports[0]
-            rawPort.open(2000)
+            rawPort.open()
             val p = rawPort
             // Most ELM327 clones: 38400 8N1. Some K-CAN cables: 115200.
             val baud = when (adapterType) {
