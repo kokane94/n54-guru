@@ -1,7 +1,6 @@
 package com.example.n54guru.protocol
 
 import android.content.Context
-import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import com.hoho.android.usbserial.driver.UsbSerialDriver
 import com.hoho.android.usbserial.driver.UsbSerialProber
@@ -52,13 +51,15 @@ class Elm327Driver(
      * Open the first compatible USB serial device. Returns true on success.
      * The caller is responsible for requesting USB permission first.
      */
-    suspend fun connect(device: UsbDevice): Boolean = withContext(Dispatchers.IO) {
+    suspend fun connect(device: android.hardware.usb.UsbDevice): Boolean = withContext(Dispatchers.IO) {
         val driver: UsbSerialDriver = prober.probeDevice(device) ?: run {
             Log.w(TAG, "No USB serial driver for device ${device.productName}")
             return@withContext false
         }
         try {
-            val p = driver.ports[0].apply { open(2000) }
+            val rawPort = driver.ports[0]
+            rawPort.open(2000)
+            val p = rawPort
             // Most ELM327 clones: 38400 8N1. Some K-CAN cables: 115200.
             val baud = when (adapterType) {
                 AdapterType.OBDLINK_MX -> 2000000
@@ -229,7 +230,6 @@ class Elm327Driver(
  * The mik3y library's UsbSerialPort has the actual I/O methods.
  */
 class UsbSerialPort(private val port: com.hoho.android.usbserial.driver.UsbSerialPort) {
-    fun open(baud: Int) = port.open()
     fun close() = port.close()
     fun setParameters(baud: Int, dataBits: Int, stopBits: Int, parity: Int) {
         port.setParameters(baud, dataBits, stopBits, parity)
