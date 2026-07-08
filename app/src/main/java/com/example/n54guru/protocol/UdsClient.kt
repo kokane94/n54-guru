@@ -37,8 +37,8 @@ class UdsClient(
         if (response.isEmpty()) throw UdsException("Empty response")
 
         if (response[0] == UdsProtocol.ServiceId.NEGATIVE_RESPONSE) {
-            val nrc = if (response.size >= 3) response[2] else 0
-            val originalSid = if (response.size >= 2) response[1] else 0
+            val nrc = if (response.size >= 3) response[2] else 0.toByte()
+            val originalSid = if (response.size >= 2) response[1] else 0.toByte()
             throw NegativeResponseException(originalSid, nrc, nrcToString(nrc))
         }
 

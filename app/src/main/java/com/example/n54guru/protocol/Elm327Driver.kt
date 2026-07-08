@@ -216,7 +216,7 @@ class Elm327Driver(
     companion object {
         private const val TAG = "Elm327Driver"
 
-        fun listAvailableDevices(context: Context): List<UsbDevice> {
+        fun listAvailableDevices(context: Context): List<android.hardware.usb.UsbDevice> {
             val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
             val prober = UsbSerialProber.getDefaultProber()
             return usbManager.deviceList.values.filter { prober.probeDevice(it) != null }

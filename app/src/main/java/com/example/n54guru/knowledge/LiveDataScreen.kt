@@ -99,7 +99,9 @@ fun LiveDataScreen(
                         }) { Text("Connect") }
                     } else {
                         OutlinedButton(onClick = { source.disconnect() }) { Text("Disconnect") }
-                        OutlinedButton(onClick = { source.connectCurrentDevice(context) }) { Text("Reconnect") }
+                        OutlinedButton(onClick = {
+                        scope.launch { source.connectCurrentDevice(context) }
+                    }) { Text("Reconnect") }
                     }
                     OutlinedButton(onClick = onShowPartner) { Text("AI Partner") }
                 }

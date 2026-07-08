@@ -38,6 +38,7 @@ object UdsProtocol {
         const val REQUEST_TRANSFER_EXIT = 0x37.toByte()
         const val TESTER_PRESENT = 0x3E.toByte()
         const val NEGATIVE_RESPONSE = 0x7F.toByte()
+        const val CLEAR_DTC: Byte = 0x14
     }
 
     // ---------- Positive response offset ----------

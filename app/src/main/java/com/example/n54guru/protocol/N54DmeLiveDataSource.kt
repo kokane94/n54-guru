@@ -308,7 +308,7 @@ class N54DmeLiveDataSource(private val context: Context) {
         private const val TAG = "N54DmeLiveDataSource"
 
         fun listAvailableDevicesFromContext(context: Context): List<android.hardware.usb.UsbDevice> {
-            val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
+            val usbManager = context.getSystemService(Context.USB_SERVICE) as android.hardware.usb.UsbManager
             val prober = com.hoho.android.usbserial.driver.UsbSerialProber.getDefaultProber()
             return usbManager.deviceList.values.filter { prober.probeDevice(it) != null }
         }

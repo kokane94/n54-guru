@@ -71,7 +71,7 @@ class IsotpTransport(private val canBus: CanBus) {
             else -> 127
         }
 
-        var sent = 6
+    var sent = 6
         var sequence = 1
         while (sent < payload.size) {
             val chunkSize = minOf(7, payload.size - sent)
