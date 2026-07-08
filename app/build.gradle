@@ -71,8 +71,10 @@ dependencies {
     // USB Serial (OBD2 Communication) - the real package on JitPack
     implementation 'com.github.mik3y:usb-serial-for-android:3.9.0'
 
-    // Text to Speech (real, current Google Play Services TTS)
-    implementation 'com.google.android.gms:play-services-tts:21.3.0'
+    // Text to Speech uses the Android framework (android.speech.tts.TextToSpeech).
+    // No Google Play Services TTS artifact exists in Maven Central or Google Maven.
+    // com.google.android.gms:play-services-tts is not a real coordinate; the prior
+    // dependency was fabricated and broke the build.
 
     // ML Kit (kept for OCR/part scanning)
     implementation 'com.google.mlkit:text-recognition:16.0.1'
