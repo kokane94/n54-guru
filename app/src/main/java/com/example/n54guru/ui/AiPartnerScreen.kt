@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,7 +32,7 @@ fun AiPartnerScreen(onBack: () -> Unit) {
                 .padding(16.dp)
                 .verticalScroll(scroll)
         ) {
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onBack) { Text("← Back") }
                 Spacer(Modifier.width(8.dp))
                 Text(
@@ -78,21 +79,23 @@ fun AiPartnerScreen(onBack: () -> Unit) {
             )
 
             Spacer(Modifier.height(16.dp))
-            SectionHeader("What you'll see in the codebase")
+            SectionHeader("What's in this build")
             Body(
-                "Every line of Kotlin here is written to be readable and reviewable. " +
-                "All the OBD-II / UDS / KWP2000 protocol work targets public ISO and " +
-                "SAE specifications. No proprietary MHD, Protool, NCS Expert, or " +
-                "BimmerGeeks assets are bundled. The features match what those tools " +
-                "do, but the implementation is ours."
+                "Five core features: Live OBD2 diagnostics, N54-specific fault code " +
+                "database with causes and fixes, AI-driven symptom analyzer, " +
+                "knowledge base articles on common N54 failure modes, and a " +
+                "stage-based mod guide from stock to 700+ WHP. All knowledge is " +
+                "from public BMW technical documentation and the owner's own " +
+                "BMW-N54-Tuning-Resources repository — no proprietary assets bundled."
             )
 
             Spacer(Modifier.height(16.dp))
-            SectionHeader("Working agreement")
-            Bullet("Real engineering, not performed helpfulness")
-            Bullet("If something's broken, we say so and why")
-            Bullet("Ship the smallest thing that works, then iterate")
-            Bullet("Kane is the user and the lead. Hermes is the other half.")
+            SectionHeader("How it was built")
+            Bullet("Real Gradle 8.10.2 / AGP 8.7 / Kotlin 1.9.24 build pipeline")
+            Bullet("CI via GitHub Actions — every commit ships a fresh debug APK")
+            Bullet("All code open-source in github.com/kokane94/n54-guru")
+            Bullet("OBD-II / UDS protocol work references kokane94/python-udsoncan")
+            Bullet("No fabrications, no hallucinated dependencies, no broken promises")
 
             Spacer(Modifier.height(16.dp))
             SectionHeader("Resumability")
