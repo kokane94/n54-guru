@@ -310,6 +310,7 @@ object N54FaultCodes {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FaultCodesScreen(onCodeClick: (String) -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
@@ -366,6 +367,7 @@ fun FaultCodesScreen(onCodeClick: (String) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FaultCodeCard(code: N54FaultCodes.FaultCode, onClick: () -> Unit) {
     val severityColor = when (code.severity) {

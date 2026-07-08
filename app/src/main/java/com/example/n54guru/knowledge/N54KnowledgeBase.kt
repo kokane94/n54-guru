@@ -219,6 +219,7 @@ object N54KnowledgeBase {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KnowledgeBaseScreen(onArticleClick: (String) -> Unit) {
     var selectedCategory by remember { mutableStateOf("all") }
@@ -285,6 +286,7 @@ fun KnowledgeBaseScreen(onArticleClick: (String) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ArticleCard(article: N54KnowledgeBase.Article, onClick: () -> Unit) {
     val priorityColor = when (article.priority) {
