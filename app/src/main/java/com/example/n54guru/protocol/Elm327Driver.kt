@@ -56,10 +56,14 @@ class Elm327Driver(
             Log.w(TAG, "No USB serial driver for device ${device.productName}")
             return@withContext false
         }
+        val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
+        val connection = usbManager.openDevice(device) ?: run {
+            Log.w(TAG, "USB permission not granted for ${device.productName}")
+            return@withContext false
+        }
         try {
-            val rawPort = driver.ports[0]
-            rawPort.open()
-            val p = rawPort
+            val p = driver.ports[0]
+            p.open(connection)
             // Most ELM327 clones: 38400 8N1. Some K-CAN cables: 115200.
             val baud = when (adapterType) {
                 AdapterType.OBDLINK_MX -> 2000000
@@ -72,6 +76,7 @@ class Elm327Driver(
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to open USB device", e)
+            try { connection.close() } catch (_: Exception) {}
             false
         }
     }
@@ -228,12 +233,19 @@ class Elm327Driver(
 /**
  * Lightweight wrapper around UsbSerialPort to give us a stable interface.
  * The mik3y library's UsbSerialPort has the actual I/O methods.
+ *
+ * read() returns up to `count` bytes; readUntilElmPrompt() accumulates
+ * bytes until the ELM327 '>' character is seen.
  */
 class UsbSerialPort(private val port: com.hoho.android.usbserial.driver.UsbSerialPort) {
     fun close() = port.close()
-    fun setParameters(baud: Int, dataBits: Int, stopBits: Int, parity: Int) {
-        port.setParameters(baud, dataBits, stopBits, parity)
+    fun setParameters(baudRate: Int, dataBits: Int, stopBits: Int, parity: Int) {
+        port.setParameters(baudRate, dataBits, stopBits, parity)
     }
-    fun write(data: ByteArray): Boolean = try { port.write(data, 1000); true } catch (e: Exception) { false }
-    fun read(buffer: ByteArray, offset: Int, count: Int, timeoutMs: Int): Int = try { port.read(buffer, offset, count, timeoutMs) } catch (e: Exception) { -1 }
+    fun write(data: ByteArray): Boolean = try {
+        port.write(data, data.size, 1000); true
+    } catch (e: Exception) { false }
+    fun read(buffer: ByteArray, offset: Int, count: Int, timeoutMs: Int): Int = try {
+        port.read(buffer, count.coerceAtMost(buffer.size - offset), timeoutMs)
+    } catch (e: Exception) { -1 }
 }
