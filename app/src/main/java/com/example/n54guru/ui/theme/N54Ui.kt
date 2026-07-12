@@ -1,11 +1,14 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.n54guru.ui.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -73,7 +76,7 @@ fun N54ScreenHeader(
 fun N54BackButton(onBack: () -> Unit) {
     TextButton(onClick = onBack) {
         Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            imageVector = Icons.Filled.ArrowBack,
             contentDescription = "Back",
             tint = N54Colors.primary,
             modifier = Modifier.size(20.dp)
@@ -157,16 +160,10 @@ fun N54OutlinedButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
-        colors = OutlinedButtonDefaults.colors(
-            contentColor = N54Colors.primary,
-            disabledContentColor = N54Colors.mutedForeground
-        ),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            brush = androidx.compose.ui.graphics.SolidColor(N54Colors.border)
-        ),
+        border = BorderStroke(1.dp, N54Colors.border),
         shape = RoundedCornerShape(10.dp)
     ) {
-        Text(text, fontWeight = FontWeight.SemiBold)
+        Text(text, fontWeight = FontWeight.SemiBold, color = N54Colors.primary)
     }
 }
 
@@ -190,14 +187,11 @@ fun N54TextField(
         singleLine = singleLine,
         maxLines = maxLines,
         minLines = minLines,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = N54Colors.surface,
-            unfocusedContainerColor = N54Colors.surface,
-            disabledContainerColor = N54Colors.surface,
+        colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedTextColor = MaterialTheme.colorScheme.onSurface,
             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-            focusedIndicatorColor = N54Colors.primary,
-            unfocusedIndicatorColor = N54Colors.border,
+            focusedBorderColor = N54Colors.primary,
+            unfocusedBorderColor = N54Colors.border,
             focusedLabelColor = N54Colors.primary,
             unfocusedLabelColor = N54Colors.mutedForeground,
             cursorColor = N54Colors.primary
@@ -212,37 +206,46 @@ fun N54FilterChip(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    FilterChip(
-        selected = selected,
+    val bg = if (selected) N54Colors.primary.copy(alpha = 0.18f) else N54Colors.surface
+    val borderColor = if (selected) N54Colors.primary.copy(alpha = 0.5f) else N54Colors.border
+    val textColor = if (selected) N54Colors.primary else N54Colors.mutedForeground
+
+    Surface(
         onClick = onClick,
-        label = { Text(label, fontSize = 12.sp, fontWeight = FontWeight.Medium) },
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = N54Colors.surface,
-            labelColor = N54Colors.mutedForeground,
-            selectedContainerColor = N54Colors.primary.copy(alpha = 0.18f),
-            selectedLabelColor = N54Colors.primary,
-            selectedLeadingIconColor = N54Colors.primary
-        ),
-        border = FilterChipDefaults.filterChipBorder(
-            borderColor = N54Colors.border,
-            selectedBorderColor = N54Colors.primary.copy(alpha = 0.5f),
-            enabled = true,
-            selected = selected
-        )
-    )
+        color = bg,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, borderColor),
+        modifier = Modifier.height(32.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                label,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = textColor,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+        }
+    }
 }
 
 @Composable
 fun N54AssistChip(label: String, containerColor: Color = N54Colors.surface) {
-    AssistChip(
-        onClick = {},
-        label = { Text(label, fontSize = 10.sp) },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = containerColor,
-            labelColor = N54Colors.mutedForeground
-        ),
-        border = AssistChipDefaults.assistChipBorder(borderColor = N54Colors.border)
-    )
+    Surface(
+        color = containerColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, N54Colors.border),
+        modifier = Modifier.height(28.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                label,
+                fontSize = 10.sp,
+                color = N54Colors.mutedForeground,
+                modifier = Modifier.padding(horizontal = 10.dp)
+            )
+        }
+    }
 }
 
 @Composable

@@ -92,14 +92,7 @@ fun N54GuruApp(source: N54DmeLiveDataSource) {
                             articleDetail = null
                         },
                         icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title, fontSize = 10.sp) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = N54Colors.background,
-                            selectedTextColor = N54Colors.primary,
-                            indicatorColor = N54Colors.primary,
-                            unselectedIconColor = N54Colors.mutedForeground,
-                            unselectedTextColor = N54Colors.mutedForeground
-                        )
+                        label = { Text(screen.title, fontSize = 10.sp) }
                     )
                 }
             }
