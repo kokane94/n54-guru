@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- N54 Guru shield + N monogram -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M54,18 L84,30 L84,54 C84,72 70,84 54,90 C38,84 24,72 24,54 L24,30 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,42 L40,72 L46,72 L46,54 L60,72 L66,72 L66,42 L60,42 L60,60 L46,42 Z" />
+    <path
+        android:fillColor="#FFB300"
+        android:pathData="M50,28 L58,28 L54,38 Z" />
+</vector>

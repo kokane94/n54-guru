@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- USB OBD2 Adapter Vendor/Product IDs -->
-    <usb-device vendor-id="0x067b" product-id="0x2303" />  <!-- Prolific Serial Adapter -->
-    <usb-device vendor-id="0x10c4" product-id="0xea60" />  <!-- Silicon Labs CP2102 -->
-    <usb-device vendor-id="0x0403" product-id="0x6001" />  <!-- FTDI FT232 -->
-    <usb-device vendor-id="0x1a86" product-id="0x7523" />  <!-- CH340/CH341 -->
+    <!-- ELM327 and K-CAN cable USB IDs. These are the typical Vendor IDs
+         for OBD-II adapters and the BMW K-CAN cable. Common ones:
+           0x0403 - FTDI (used by many K-CAN cables and ELM327 clones)
+           0x067B - Prolific (PL2303, used by some ELM327 clones)
+           0x1A86 - QinHeng (CH340, used by many cheap clones)
+           0x10C4 - Cygnal / Silicon Labs CP210x
+           0x16D0 - MCS Electronics (used by some BMW cables)
+     -->
+    <usb-device vendor-id="1027" />  <!-- 0x0403 FTDI -->
+    <usb-device vendor-id="1659" />  <!-- 0x067B Prolific -->
+    <usb-device vendor-id="6790" />  <!-- 0x1A86 QinHeng CH340 -->
+    <usb-device vendor-id="4292" />  <!-- 0x10C4 Silicon Labs -->
+    <usb-device vendor-id="5840" />  <!-- 0x16D0 MCS -->
 </resources>

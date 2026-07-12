@@ -75,7 +75,8 @@ jobs:
       - name: Build APK (Debug)
         run: |
           echo "🔨 Building N54 Guru APK..."
-          ./gradle-8.10.2/bin/gradle assembleDebug --stacktrace
+          ./gradle-8.10.2/bin/gradle assembleDebug --stacktrace --info 2>&1 | tee /tmp/build-debug.log
+          echo "BUILD_EXIT=$?"
 
       - name: Verify APK was created
         run: |
@@ -233,6 +234,18 @@ jobs:
             find app/build -type f -name "*.apk" 2>/dev/null | head -5 || echo "No APK files found"
           else
             echo "No build directory found"
+          fi
+          echo ""
+          echo "Last 300 lines of build log:"
+          if [ -f /tmp/build-debug.log ]; then
+            tail -300 /tmp/build-debug.log
+          else
+            echo "No build log captured"
+          fi
+          echo ""
+          echo "Kotlin compile errors (e: prefix):"
+          if [ -f /tmp/build-debug.log ]; then
+            grep -E "^(e:|w:).*\.kt" /tmp/build-debug.log | head -100 || echo "no .kt errors found in log"
           fi
           echo ""
           echo "============================================"

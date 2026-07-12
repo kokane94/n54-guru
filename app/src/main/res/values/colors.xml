@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF0C0F14</color>
+    <color name="white">#FFF1F2F5</color>
+    <color name="n54_background">#FF0C0F14</color>
+    <color name="n54_surface">#FF13161D</color>
+    <color name="n54_primary">#FFFF7F11</color>
+    <color name="n54_accent">#FF29B6F6</color>
+    <color name="n54_muted">#FF7F8C9A</color>
+    <color name="n54_border">#FF2A2F3A</color>
+</resources>

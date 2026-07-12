@@ -10,6 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // JitPack is required for MPAndroidChart and usb-serial-for-android
+        maven { url 'https://jitpack.io' }
     }
 }
 

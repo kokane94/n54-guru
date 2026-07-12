@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-kapt'
 }
 
 android {
@@ -21,50 +20,67 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.3'
+        // Compose compiler 1.5.14 is the matching version for Kotlin 1.9.24.
+        // (1.5.3 only supports Kotlin 1.9.10; 1.5.4 supports up to 1.9.20.)
+        kotlinCompilerExtensionVersion '1.5.14'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    packaging {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}']
+        }
     }
 }
 
 dependencies {
-    // Compose
-    implementation 'androidx.compose.ui:ui:1.5.3'
-    implementation 'androidx.compose.material3:material3:1.1.1'
-    implementation 'androidx.compose.foundation:foundation:1.5.3'
-    implementation 'androidx.activity:activity-compose:1.7.2'
-    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.6.1'
+    // Core / Compose
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.7.0'
+
+    implementation 'androidx.compose.ui:ui:1.5.4'
+    implementation 'androidx.compose.material3:material3:1.1.2'
+    implementation 'androidx.compose.foundation:foundation:1.5.4'
+    implementation 'androidx.compose.material:material-icons-extended:1.5.4'
 
     // Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
 
-    // Room (Database)
-    implementation 'androidx.room:room-runtime:2.5.2'
-    implementation 'androidx.room:room-ktx:2.5.2'
-    kapt 'androidx.room:room-compiler:2.5.2'
+    // Room removed - the protocol layer uses in-memory state and CSV files,
+    // no persistent database. kapt is also removed to avoid Room processor
+    // errors when Room artifacts are not in use.
 
-    // Retrofit (HTTP)
+    // Networking (Retrofit / OkHttp / Jsoup) - kept for future part-finder
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
-
-    // Serialization
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'org.jsoup:jsoup:1.17.1'
 
-    // USB Serial (OBD2 Communication)
-    implementation 'com.hoho.android:usbserial:0.3.1'
+    // USB Serial (OBD2 Communication) - the real package on JitPack
+    implementation 'com.github.mik3y:usb-serial-for-android:3.9.0'
 
-    // Text to Speech
-    implementation 'androidx.speech:speech:1.0.0'
-    implementation 'com.google.android.gms:play-services-tts:1.0.0'
+    // Text to Speech uses the Android framework (android.speech.tts.TextToSpeech).
+    // No Google Play Services TTS artifact exists in Maven Central or Google Maven.
+    // com.google.android.gms:play-services-tts is not a real coordinate; the prior
+    // dependency was fabricated and broke the build.
 
-    // ML Kit
-    implementation 'com.google.mlkit:text-recognition:16.0.0'
+    // ML Kit (kept for OCR/part scanning)
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
 
-    // Charts
+    // Charts (MPAndroidChart - real version, on JitPack)
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
-
-    // Retrofit for part search
-    implementation 'org.jsoup:jsoup:1.15.3'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
