@@ -1,6 +1,7 @@
 package com.example.n54guru.knowledge
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -176,4 +177,5 @@ object N54FaultCodes {
     FaultCode("2E81", "Oil Condition Sensor", "Engine", "Low", "Oil level/quality sensor reports out-of-range value.", listOf("Faulty oil condition sensor", "Wiring issue"), listOf("Replace oil condition sensor")),
     FaultCode("2C01", "Thermostat Malfunction", "Engine", "Medium", "Coolant thermostat heater control circuit issue.", listOf("Failed thermostat", "Wiring fault"), listOf("Replace thermostat")),
     FaultCode("2A87", "Boost Pressure Sensor", "Boost", "Medium", "Boost pressure sensor signal implausible.", listOf("Faulty boost pressure sensor", "Vacuum line cracked"), listOf("Replace boost pressure sensor", "Check vacuum hose to sensor"))
-    }
+    )
+}
