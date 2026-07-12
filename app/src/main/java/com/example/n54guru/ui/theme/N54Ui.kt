@@ -19,14 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/**
- * Shared UI primitives for the N54 Guru Base44-inspired design system.
- *
- * These keep every screen consistent: dark cards, orange primary, cyan
- * accents, rounded corners, and Inter-style typography.
- */
-
-private val defaultShape = RoundedCornerShape(12.dp)
+private val cardShape = RoundedCornerShape(16.dp)
+private val chipShape = RoundedCornerShape(20.dp)
+private val badgeShape = RoundedCornerShape(8.dp)
 
 @Composable
 fun N54ScreenHeader(
@@ -34,39 +29,47 @@ fun N54ScreenHeader(
     subtitle: String? = null,
     icon: ImageVector? = null,
     iconTint: Color = N54Colors.primary,
+    action: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            icon?.let {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(iconTint.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = it,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier.size(22.dp)
-                    )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                icon?.let {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .background(iconTint.copy(alpha = 0.18f), RoundedCornerShape(10.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = it,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
                 }
-                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = N54Colors.textPrimary
+                )
             }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            action?.invoke()
         }
         subtitle?.let {
             Spacer(Modifier.height(4.dp))
             Text(
                 text = it,
-                style = MaterialTheme.typography.bodySmall,
-                color = N54Colors.mutedForeground
+                style = MaterialTheme.typography.bodyMedium,
+                color = N54Colors.textSecondary
             )
         }
     }
@@ -82,7 +85,7 @@ fun N54BackButton(onBack: () -> Unit) {
             modifier = Modifier.size(20.dp)
         )
         Spacer(Modifier.width(4.dp))
-        Text("Back", color = N54Colors.primary)
+        Text("Back", color = N54Colors.primary, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -94,16 +97,16 @@ fun N54Card(
 ) {
     val cardModifier = modifier
         .fillMaxWidth()
-        .background(N54Colors.surface, defaultShape)
-        .border(1.dp, N54Colors.border, defaultShape)
+        .background(N54Colors.surface, cardShape)
+        .border(1.dp, N54Colors.border, cardShape)
 
     if (onClick != null) {
         Surface(
             onClick = onClick,
             modifier = cardModifier,
-            shape = defaultShape,
+            shape = cardShape,
             color = N54Colors.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            contentColor = N54Colors.textPrimary
         ) {
             Column(Modifier.padding(16.dp), content = content)
         }
@@ -116,13 +119,27 @@ fun N54Card(
 }
 
 @Composable
+fun N54CompactCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .background(N54Colors.surface, cardShape)
+            .border(1.dp, N54Colors.border, cardShape)
+            .padding(14.dp),
+        content = content
+    )
+}
+
+@Composable
 fun N54SectionHeader(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onBackground,
-        modifier = Modifier.padding(top = 16.dp, bottom = 6.dp)
+        color = N54Colors.textSecondary,
+        modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
     )
 }
 
@@ -131,20 +148,25 @@ fun N54PrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    leadingIcon: ImageVector? = null
 ) {
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier,
+        modifier = modifier.height(46.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = N54Colors.primary,
-            contentColor = N54Colors.background,
+            contentColor = N54Colors.onPrimary,
             disabledContainerColor = N54Colors.primary.copy(alpha = 0.35f),
-            disabledContentColor = N54Colors.mutedForeground
+            disabledContentColor = N54Colors.textMuted
         ),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(12.dp)
     ) {
+        leadingIcon?.let {
+            Icon(it, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+        }
         Text(text, fontWeight = FontWeight.SemiBold)
     }
 }
@@ -159,7 +181,7 @@ fun N54OutlinedButton(
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier,
+        modifier = modifier.height(40.dp),
         border = BorderStroke(1.dp, N54Colors.border),
         shape = RoundedCornerShape(10.dp)
     ) {
@@ -172,31 +194,34 @@ fun N54TextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    placeholder: String? = null,
     modifier: Modifier = Modifier,
-    leadingIcon: @Composable (() -> Unit)? = null,
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
-    minLines: Int = 1
+    minLines: Int = 1,
+    leadingIcon: @Composable (() -> Unit)? = null
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        leadingIcon = leadingIcon,
+        placeholder = placeholder?.let { { Text(it, color = N54Colors.textMuted) } },
         modifier = modifier,
         singleLine = singleLine,
         maxLines = maxLines,
         minLines = minLines,
+        leadingIcon = leadingIcon,
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedTextColor = N54Colors.textPrimary,
+            unfocusedTextColor = N54Colors.textPrimary,
             focusedBorderColor = N54Colors.primary,
             unfocusedBorderColor = N54Colors.border,
             focusedLabelColor = N54Colors.primary,
-            unfocusedLabelColor = N54Colors.mutedForeground,
-            cursorColor = N54Colors.primary
+            unfocusedLabelColor = N54Colors.textMuted,
+            cursorColor = N54Colors.primary,
+            containerColor = N54Colors.surfaceVariant
         ),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(12.dp)
     )
 }
 
@@ -206,62 +231,71 @@ fun N54FilterChip(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val bg = if (selected) N54Colors.primary.copy(alpha = 0.18f) else N54Colors.surface
-    val borderColor = if (selected) N54Colors.primary.copy(alpha = 0.5f) else N54Colors.border
-    val textColor = if (selected) N54Colors.primary else N54Colors.mutedForeground
+    val bg = if (selected) N54Colors.primary else N54Colors.chipUnselectedBg
+    val textColor = if (selected) N54Colors.onPrimary else N54Colors.chipUnselectedText
 
     Surface(
         onClick = onClick,
         color = bg,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, borderColor),
-        modifier = Modifier.height(32.dp)
+        shape = chipShape,
+        modifier = Modifier.height(34.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
                 label,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = textColor,
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
     }
 }
 
 @Composable
-fun N54AssistChip(label: String, containerColor: Color = N54Colors.surface) {
+fun N54StageChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    leadingIcon: ImageVector? = null
+) {
+    val bg = if (selected) N54Colors.primary else N54Colors.chipUnselectedBg
+    val textColor = if (selected) N54Colors.onPrimary else N54Colors.textSecondary
+
     Surface(
-        color = containerColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, N54Colors.border),
-        modifier = Modifier.height(28.dp)
+        onClick = onClick,
+        color = bg,
+        shape = chipShape,
+        modifier = Modifier.height(40.dp)
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                label,
-                fontSize = 10.sp,
-                color = N54Colors.mutedForeground,
-                modifier = Modifier.padding(horizontal = 10.dp)
-            )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 14.dp)
+        ) {
+            leadingIcon?.let {
+                Icon(it, contentDescription = null, tint = textColor, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+            }
+            Text(label, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = textColor)
         }
     }
 }
 
 @Composable
-fun N54PriorityBadge(
+fun N54Badge(
     label: String,
     color: Color,
+    bgColor: Color = color.copy(alpha = 0.18f),
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
-            .background(color.copy(alpha = 0.18f), RoundedCornerShape(6.dp))
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .background(bgColor, badgeShape)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
         Text(
             text = label,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
             color = color,
             fontWeight = FontWeight.SemiBold
         )
@@ -269,9 +303,52 @@ fun N54PriorityBadge(
 }
 
 @Composable
+fun N54LevelBadge(level: String) {
+    val color = when (level.lowercase()) {
+        "beginner" -> N54Colors.beginner
+        "intermediate" -> N54Colors.intermediate
+        else -> N54Colors.textSecondary
+    }
+    val bg = when (level.lowercase()) {
+        "beginner" -> N54Colors.beginnerBg
+        "intermediate" -> N54Colors.intermediateBg
+        else -> N54Colors.chipUnselectedBg
+    }
+    Box(
+        modifier = Modifier
+            .background(bg, badgeShape)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    ) {
+        Text(level, fontSize = 11.sp, color = color, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+fun N54SeverityBadge(severity: String) {
+    val (color, bg) = when (severity.lowercase()) {
+        "critical" -> Pair(N54Colors.badgeCritical, N54Colors.badgeCriticalBg)
+        "high" -> Pair(N54Colors.badgeHigh, N54Colors.badgeHighBg)
+        "medium" -> Pair(N54Colors.badgeMedium, N54Colors.badgeMediumBg)
+        "low" -> Pair(N54Colors.badgeLow, N54Colors.badgeLowBg)
+        "must-have" -> Pair(N54Colors.badgeCritical, N54Colors.badgeCriticalBg)
+        "recommended" -> Pair(N54Colors.badgeMedium, N54Colors.badgeMediumBg)
+        else -> Pair(N54Colors.textSecondary, N54Colors.chipUnselectedBg)
+    }
+    N54Badge(label = severity.uppercase(), color = color, modifier = Modifier.background(bg, badgeShape))
+}
+
+@Composable
 fun N54Bullet(text: String) {
     Row(modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)) {
         Text("• ", color = N54Colors.primary, style = MaterialTheme.typography.bodyMedium)
-        Text(text, style = MaterialTheme.typography.bodyMedium)
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = N54Colors.textSecondary)
+    }
+}
+
+@Composable
+fun N56StatCard(value: String, label: String, modifier: Modifier = Modifier) {
+    N54CompactCard(modifier = modifier) {
+        Text(value, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = N54Colors.primary)
+        Text(label, fontSize = 13.sp, color = N54Colors.textSecondary)
     }
 }

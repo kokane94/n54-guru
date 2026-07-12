@@ -4,321 +4,36 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.n54guru.knowledge.N54FaultCodes.CODE_DATA
 import com.example.n54guru.ui.theme.*
-
-/**
- * N54-specific BMW DME fault code database.
- *
- * Codes are 4-character hex strings as they appear in the DME (DME = Digital
- * Motor Electronics, the Bosch ME9 engine control unit in the N54). These are
- * read via UDS service 0x19 (ReadDTCInformation) on the BMW diagnostic bus.
- *
- * Sources: public BMW technical service bulletins, BimmerForums N54 fault
- * code catalog, and reverse-engineering of the DME9 ECU fault code tables.
- */
-object N54FaultCodes {
-
-    data class FaultCode(
-        val code: String,
-        val title: String,
-        val description: String,
-        val severity: String,        // critical, warning, info
-        val symptoms: List<String>,
-        val causes: List<String>,
-        val fixes: List<String>
-    )
-
-    val CODE_DATA: List<FaultCode> = listOf(
-        FaultCode(
-            code = "29CD",
-            title = "Fuel Rail Pressure Too Low",
-            description = "HPFP cannot maintain commanded rail pressure. Common on N54, especially with age or aftermarket fueling demands.",
-            severity = "critical",
-            symptoms = listOf(
-                "Long cranks",
-                "Stalling at idle",
-                "Power loss under load"
-            ),
-            causes = listOf(
-                "Worn HPFP internals",
-                "Failed cam follower",
-                "Inadequate LPFP supply",
-                "Leaking fuel injector"
-            ),
-            fixes = listOf(
-                "Replace HPFP with latest revision",
-                "Inspect cam follower, replace if worn",
-                "Test LPFP pressure under load",
-                "Smoke-test fuel system for leaks"
-            )
-        ),
-        FaultCode(
-            code = "2A87",
-            title = "Boost Pressure Not Plausible",
-            description = "DME commanded boost does not match measured MAP. Indicates boost leak, overboost, or sensor fault.",
-            severity = "warning",
-            symptoms = listOf(
-                "Power loss",
-                "Limp mode",
-                "Whistling from engine bay"
-            ),
-            causes = listOf(
-                "Cracked stock charge pipe (very common)",
-                "Blown diverter valve",
-                "Faulty MAP sensor",
-                "Wastegate stuck open"
-            ),
-            fixes = listOf(
-                "Replace charge pipe with aluminum (ARM, BMS, VRSF)",
-                "Test diverter valve, replace if leaking",
-                "Inspect boost lines and couplers",
-                "Check MAP sensor wiring"
-            )
-        ),
-        FaultCode(
-            code = "2A99",
-            title = "Charge Pressure Too Low",
-            description = "Boost is below expected threshold. Almost always a leak, not a turbo problem.",
-            severity = "warning",
-            symptoms = listOf(
-                "Power loss",
-                "Hissing under boost",
-                "Check engine light"
-            ),
-            causes = listOf(
-                "Cracked charge pipe (stock plastic)",
-                "Diverter valve leak",
-                "Intercooler leak",
-                "Loose clamp on boost piping"
-            ),
-            fixes = listOf(
-                "Replace stock charge pipe",
-                "Replace diverter valve with stronger unit",
-                "Pressure-test the charge system",
-                "Re-seat all boost clamps"
-            )
-        ),
-        FaultCode(
-            code = "2A9A",
-            title = "Charge Pressure Too High",
-            description = "DME detected boost above commanded value. Risk of overboost damage to engine.",
-            severity = "critical",
-            symptoms = listOf(
-                "Power cut / limp mode",
-                "Engine runs rough briefly"
-            ),
-            causes = listOf(
-                "Wastegate stuck closed",
-                "Boost solenoid fault",
-                "N75 valve failure"
-            ),
-            fixes = listOf(
-                "Test wastegate actuator operation",
-                "Replace N75 boost pressure solenoid",
-                "Inspect boost control vacuum lines"
-            )
-        ),
-        FaultCode(
-            code = "2AAF",
-            title = "VANOS Solenoid Mechanical Fault",
-            description = "Variable valve timing solenoid is not operating within specification.",
-            severity = "warning",
-            symptoms = listOf(
-                "Rough idle",
-                "Power loss",
-                "Cold-start rattle"
-            ),
-            causes = listOf(
-                "Sludge buildup on solenoid screen",
-                "Failed solenoid coil",
-                "Low oil pressure"
-            ),
-            fixes = listOf(
-                "Remove and clean VANOS solenoids",
-                "Replace seals on solenoid",
-                "Use LL-01 approved oil on schedule"
-            )
-        ),
-        FaultCode(
-            code = "2AB0",
-            title = "VANOS Exhaust Solenoid Fault",
-            description = "Exhaust-side VANOS solenoid not actuating correctly.",
-            severity = "warning",
-            symptoms = listOf(
-                "Reduced power",
-                "Hesitation"
-            ),
-            causes = listOf(
-                "Solenoid failure",
-                "Oil contamination"
-            ),
-            fixes = listOf(
-                "Test solenoid resistance",
-                "Replace if out of spec",
-                "Verify oil quality and level"
-            )
-        ),
-        FaultCode(
-            code = "2C5B",
-            title = "Electric Water Pump Failure",
-            description = "DME detected the electric water pump is not operating correctly. Engine may overheat quickly.",
-            severity = "critical",
-            symptoms = listOf(
-                "Temperature rising",
-                "Coolant warning",
-                "Reduced power message"
-            ),
-            causes = listOf(
-                "Pump motor failure (very common 60-100k miles)",
-                "Wiring fault",
-                "DME driver failure"
-            ),
-            fixes = listOf(
-                "Replace water pump (Pierburg OEM recommended)",
-                "Replace thermostat at same time",
-                "Inspect wiring harness"
-            )
-        ),
-        FaultCode(
-            code = "3000",
-            title = "Cylinder 1 Misfire Detected",
-            description = "DME detected misfire on cylinder 1. Counters track total misfires; check freeze frame data.",
-            severity = "warning",
-            symptoms = listOf(
-                "Rough idle",
-                "Power loss",
-                "Flashing check engine light if severe"
-            ),
-            causes = listOf(
-                "Failing ignition coil (very common)",
-                "Worn spark plug",
-                "Failing fuel injector (index 12 = latest)",
-                "Low compression"
-            ),
-            fixes = listOf(
-                "Swap coil from another cylinder to confirm",
-                "Replace spark plugs (one step colder if tuned)",
-                "Test injector flow rate",
-                "Compression test if misfire persists"
-            )
-        ),
-        FaultCode(
-            code = "3001",
-            title = "Cylinder 2 Misfire Detected",
-            description = "Misfire on cylinder 2. Same diagnostic path as 3000.",
-            severity = "warning",
-            symptoms = listOf(
-                "Rough idle",
-                "Power loss"
-            ),
-            causes = listOf(
-                "Failing ignition coil",
-                "Worn spark plug",
-                "Failing fuel injector"
-            ),
-            fixes = listOf(
-                "Swap coil to confirm",
-                "Replace plugs if due",
-                "Test injector"
-            )
-        ),
-        FaultCode(
-            code = "3002",
-            title = "Cylinder 3 Misfire Detected",
-            description = "Misfire on cylinder 3. Same diagnostic path as 3000.",
-            severity = "warning",
-            symptoms = listOf(
-                "Rough idle",
-                "Power loss"
-            ),
-            causes = listOf(
-                "Failing ignition coil",
-                "Worn spark plug",
-                "Failing fuel injector"
-            ),
-            fixes = listOf(
-                "Swap coil",
-                "Replace plugs if due",
-                "Test injector"
-            )
-        ),
-        FaultCode(
-            code = "30BA",
-            title = "Turbocharger Wastegate Mechanical Fault",
-            description = "Wastegate mechanism on a turbo is sticking or not operating correctly. Often related to wastegate rattle.",
-            severity = "warning",
-            symptoms = listOf(
-                "Metallic rattle at idle",
-                "Boost underperformance",
-                "Check engine light"
-            ),
-            causes = listOf(
-                "Worn wastegate actuator",
-                "Carbon buildup in mechanism"
-            ),
-            fixes = listOf(
-                "Replace wastegate actuator",
-                "Clean carbon from mechanism",
-                "If high mileage, full turbo replacement"
-            )
-        ),
-        FaultCode(
-            code = "30BB",
-            title = "Turbocharger Boost Control Fault",
-            description = "Boost control system not maintaining target pressure.",
-            severity = "warning",
-            symptoms = listOf(
-                "Power loss",
-                "Boost fluctuation"
-            ),
-            causes = listOf(
-                "N75 valve failure",
-                "Wastegate issue",
-                "Vacuum leak in boost control"
-            ),
-            fixes = listOf(
-                "Test N75 valve",
-                "Inspect vacuum lines",
-                "Check wastegate operation"
-            )
-        )
-    )
-
-    val CATEGORIES: List<String> = listOf("all", "critical", "warning", "info")
-
-    fun search(query: String, severity: String = "all"): List<FaultCode> {
-        val q = query.lowercase()
-        return CODE_DATA.filter { code ->
-            val matchesQuery = q.isEmpty() ||
-                code.code.lowercase().contains(q) ||
-                code.title.lowercase().contains(q) ||
-                code.description.lowercase().contains(q)
-            val matchesSeverity = severity == "all" || code.severity == severity
-            matchesQuery && matchesSeverity
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FaultCodesScreen(onCodeClick: (String) -> Unit) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedSeverity by remember { mutableStateOf("all") }
+fun FaultCodesScreen(onDetail: (String) -> Unit) {
+    var search by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf("All") }
+    val categories = listOf("All", "Fuel", "Boost", "Ignition", "Turbo", "Engine")
 
-    val codes = remember(searchQuery, selectedSeverity) {
-        N54FaultCodes.search(searchQuery, selectedSeverity)
+    val filtered = remember(search, selectedCategory) {
+        N54FaultCodes.CODE_DATA.filter { code ->
+            val matchesSearch = search.isBlank() ||
+                code.code.contains(search, ignoreCase = true) ||
+                code.title.contains(search, ignoreCase = true)
+            val matchesCategory = selectedCategory == "All" || code.category == selectedCategory
+            matchesSearch && matchesCategory
+        }
     }
 
     Column(
@@ -327,93 +42,68 @@ fun FaultCodesScreen(onCodeClick: (String) -> Unit) {
             .background(N54Colors.background)
             .padding(16.dp)
     ) {
-        N54ScreenHeader(
-            title = "Fault Codes",
-            subtitle = "N54-specific BMW DME fault codes with causes & fixes"
-        )
-        Spacer(Modifier.height(16.dp))
-
         N54TextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            label = "Search by code or name...",
-            modifier = Modifier.fillMaxWidth(),
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = N54Colors.mutedForeground) }
+            value = search,
+            onValueChange = { search = it },
+            label = "Search",
+            placeholder = "Search by code or name...",
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = N54Colors.textMuted) },
+            modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(Modifier.height(12.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            N54FaultCodes.CATEGORIES.forEach { sev ->
-                val label = if (sev == "all") "All" else sev.replaceFirstChar { it.uppercase() }
+        // Category chips
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState())
+        ) {
+            categories.forEach { cat ->
                 N54FilterChip(
-                    label = label,
-                    selected = selectedSeverity == sev,
-                    onClick = { selectedSeverity = sev }
+                    label = cat,
+                    selected = selectedCategory == cat,
+                    onClick = { selectedCategory = cat }
                 )
             }
         }
-        Spacer(Modifier.height(16.dp))
 
-        if (codes.isEmpty()) {
-            Text(
-                "No fault codes found",
-                modifier = Modifier.padding(32.dp),
-                color = N54Colors.mutedForeground
-            )
-        } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(codes, key = { it.code }) { code ->
-                    FaultCodeCard(code = code, onClick = { onCodeClick(code.code) })
-                }
+        Spacer(Modifier.height(12.dp))
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            items(filtered) { code ->
+                FaultCodeRow(code, onClick = { onDetail(code.code) })
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FaultCodeCard(code: N54FaultCodes.FaultCode, onClick: () -> Unit) {
-    val severityColor = when (code.severity) {
-        "critical" -> N54Colors.destructive
-        "warning" -> N54Colors.yellow
-        else -> N54Colors.mutedForeground
-    }
-
+private fun FaultCodeRow(code: N54FaultCodes.FaultCode, onClick: () -> Unit) {
     N54Card(onClick = onClick) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(severityColor.copy(alpha = 0.18f), RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    code.code.take(2),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    color = severityColor
-                )
-            }
-            Spacer(Modifier.width(12.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = code.code,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = N54Colors.primary,
+                modifier = Modifier.width(56.dp)
+            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    code.code,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = severityColor
-                )
-                Text(
-                    code.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    code.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = N54Colors.mutedForeground,
-                    maxLines = 2
+                    text = code.title,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = N54Colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
+            N54SeverityBadge(code.severity)
+            Spacer(Modifier.width(8.dp))
+            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, tint = N54Colors.textMuted)
         }
     }
 }
@@ -421,51 +111,69 @@ private fun FaultCodeCard(code: N54FaultCodes.FaultCode, onClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FaultCodeDetailScreen(code: String, onBack: () -> Unit) {
-    val codeData = CODE_DATA.find { it.code == code }
-    if (codeData == null) {
-        Text("Code not found")
-        return
-    }
-
-    val severityColor = when (codeData.severity) {
-        "critical" -> N54Colors.destructive
-        "warning" -> N54Colors.yellow
-        else -> N54Colors.mutedForeground
-    }
+    val data = N54FaultCodes.CODE_DATA.find { it.code == code } ?: return
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(N54Colors.background)
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         N54BackButton(onBack)
         Spacer(Modifier.height(8.dp))
-        Text(
-            codeData.code,
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Black,
-            color = severityColor
-        )
-        Text(
-            codeData.title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(Modifier.height(8.dp))
-        N54PriorityBadge(codeData.severity.replaceFirstChar { it.uppercase() }, severityColor)
-        Spacer(Modifier.height(12.dp))
-        Text(codeData.description, style = MaterialTheme.typography.bodyMedium)
+
+        N54ScreenHeader(title = data.code, subtitle = data.title, icon = Icons.Filled.Speed)
+
         Spacer(Modifier.height(16.dp))
 
-        DetailSection("Symptoms", codeData.symptoms)
-        DetailSection("Likely Causes", codeData.causes)
-        DetailSection("Fixes", codeData.fixes)
+        N54Card {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                N54SeverityBadge(data.severity)
+                Spacer(Modifier.width(8.dp))
+                Text(data.category, fontSize = 13.sp, color = N54Colors.textMuted)
+            }
+            Spacer(Modifier.height(12.dp))
+            Text("Description", fontWeight = FontWeight.SemiBold, color = N54Colors.textPrimary)
+            Text(data.description, color = N54Colors.textSecondary, fontSize = 14.sp)
+            Spacer(Modifier.height(12.dp))
+            Text("Likely Causes", fontWeight = FontWeight.SemiBold, color = N54Colors.textPrimary)
+            data.causes.forEach { N54Bullet(it) }
+            Spacer(Modifier.height(12.dp))
+            Text("Fixes", fontWeight = FontWeight.SemiBold, color = N54Colors.textPrimary)
+            data.fixes.forEach { N54Bullet(it) }
+        }
     }
 }
 
-@Composable
-private fun DetailSection(title: String, items: List<String>) {
-    N54SectionHeader(title)
-    items.forEach { N54Bullet(it) }
-}
+object N54FaultCodes {
+    data class FaultCode(
+        val code: String,
+        val title: String,
+        val category: String,
+        val severity: String,
+        val description: String,
+        val causes: List<String>,
+        val fixes: List<String>
+    )
+
+    val CODE_DATA = listOf(
+    FaultCode("29CD", "Fuel Rail Pressure Too Low", "Fuel", "High", "Low pressure in the high-pressure fuel rail, often caused by a failing HPFP or weak LPFP.", listOf("Failing HPFP", "Weak LPFP", "Leaking injector", "Clogged fuel filter"), listOf("Check actual vs requested rail pressure", "Test HPFP volume", "Replace LPFP if pressure drops" )),
+    FaultCode("29D0", "Fuel Rail Pressure Too High", "Fuel", "Medium", "Rail pressure exceeds target. Usually a regulator or sensor issue.", listOf("Faulty rail pressure sensor", "Stuck HPFP solenoid"), listOf("Replace rail pressure sensor", "Inspect HPFP control valve")),
+    FaultCode("2A99", "Charge Pressure Too Low", "Boost", "High", "Boost pressure below requested value.", listOf("Boost leak", "Wastegate stuck open", "Faulty boost solenoid", "Turbo failing"), listOf("Smoke test for boost leaks", "Check wastegate actuation", "Test boost solenoids")),
+    FaultCode("2A9A", "Charge Pressure Too High", "Boost", "High", "Boost pressure above target.", listOf("Wastegate stuck closed", "Boost solenoid stuck", "Tuning issue"), listOf("Inspect wastegate linkage", "Test boost control solenoid")),
+    FaultCode("29DC", "Misfire Cylinder 1", "Ignition", "High", "Combustion event missed on cylinder 1.", listOf("Bad spark plug/coil/injector", "Carbon buildup", "Low compression"), listOf("Swap coil/plug to another cylinder", "Check compression", "Walnut blast intake valves")),
+    FaultCode("29DD", "Misfire Cylinder 2", "Ignition", "High", "Combustion event missed on cylinder 2.", listOf("Bad spark plug/coil/injector", "Carbon buildup", "Low compression"), listOf("Swap coil/plug", "Check compression", "Walnut blast")),
+    FaultCode("29DE", "Misfire Cylinder 3", "Ignition", "High", "Combustion event missed on cylinder 3.", listOf("Bad spark plug/coil/injector", "Carbon buildup", "Low compression"), listOf("Swap coil/plug", "Check compression", "Walnut blast")),
+    FaultCode("29DF", "Misfire Cylinder 4", "Ignition", "High", "Combustion event missed on cylinder 4.", listOf("Bad spark plug/coil/injector", "Carbon buildup", "Low compression"), listOf("Swap coil/plug", "Check compression", "Walnut blast")),
+    FaultCode("29E0", "Misfire Cylinder 5", "Ignition", "High", "Combustion event missed on cylinder 5.", listOf("Bad spark plug/coil/injector", "Carbon buildup", "Low compression"), listOf("Swap coil/plug", "Check compression", "Walnut blast")),
+    FaultCode("29E1", "Misfire Cylinder 6", "Ignition", "High", "Combustion event missed on cylinder 6.", listOf("Bad spark plug/coil/injector", "Carbon buildup", "Low compression"), listOf("Swap coil/plug", "Check compression", "Walnut blast")),
+    FaultCode("30BA", "Wastegate 1 Stuck Open/Closed", "Turbo", "High", "Turbo 1 wastegate position outside expected range.", listOf("Wastegate actuator failure", "Vacuum leak", "Stuck wastegate flap"), listOf("Check vacuum lines", "Inspect wastegate movement", "Replace actuator if needed")),
+    FaultCode("30BB", "Wastegate 2 Stuck Open/Closed", "Turbo", "High", "Turbo 2 wastegate position outside expected range.", listOf("Wastegate actuator failure", "Vacuum leak", "Stuck wastegate flap"), listOf("Check vacuum lines", "Inspect wastegate movement", "Replace actuator")),
+    FaultCode("2AAF", "VANOS Solenoid Intake", "Engine", "Medium", "Intake VANOS solenoid control or position issue.", listOf("Dirty VANOS solenoid", "Bad solenoid", "Low oil pressure"), listOf("Clean or replace intake VANOS solenoid", "Check oil level/quality")),
+    FaultCode("2AB0", "VANOS Solenoid Exhaust", "Engine", "Medium", "Exhaust VANOS solenoid control or position issue.", listOf("Dirty VANOS solenoid", "Bad solenoid", "Low oil pressure"), listOf("Clean or replace exhaust VANOS solenoid", "Check oil level/quality")),
+    FaultCode("2C5B", "Electric Water Pump Malfunction", "Engine", "High", "DME detects water pump failure or no coolant flow.", listOf("Failed electric water pump", "Wiring fault", "Low coolant"), listOf("Replace electric water pump", "Bleed cooling system")),
+    FaultCode("2E81", "Oil Condition Sensor", "Engine", "Low", "Oil level/quality sensor reports out-of-range value.", listOf("Faulty oil condition sensor", "Wiring issue"), listOf("Replace oil condition sensor")),
+    FaultCode("2C01", "Thermostat Malfunction", "Engine", "Medium", "Coolant thermostat heater control circuit issue.", listOf("Failed thermostat", "Wiring fault"), listOf("Replace thermostat")),
+    FaultCode("2A87", "Boost Pressure Sensor", "Boost", "Medium", "Boost pressure sensor signal implausible.", listOf("Faulty boost pressure sensor", "Vacuum line cracked"), listOf("Replace boost pressure sensor", "Check vacuum hose to sensor"))
+    }

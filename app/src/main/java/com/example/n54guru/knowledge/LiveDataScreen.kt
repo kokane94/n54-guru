@@ -75,7 +75,7 @@ fun LiveDataScreen(
                         .size(36.dp)
                         .background(
                             if (data.isConnected) N54Colors.emerald.copy(alpha = 0.18f)
-                            else N54Colors.yellow.copy(alpha = 0.18f),
+                            else N54Colors.accentSoft,
                             RoundedCornerShape(10.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -83,7 +83,7 @@ fun LiveDataScreen(
                     Icon(
                         Icons.Filled.Usb,
                         contentDescription = null,
-                        tint = if (data.isConnected) N54Colors.emerald else N54Colors.yellow
+                        tint = if (data.isConnected) N54Colors.emerald else N54Colors.accent
                     )
                 }
                 Spacer(Modifier.width(10.dp))
@@ -97,7 +97,7 @@ fun LiveDataScreen(
                         if (data.isConnected) "Live data @ 20 Hz over ISO 15765 / UDS"
                         else "Plug in K-CAN cable or ELM327 OBD-II adapter",
                         style = MaterialTheme.typography.bodySmall,
-                        color = N54Colors.mutedForeground
+                        color = N54Colors.textMuted
                     )
                 }
             }
@@ -145,7 +145,7 @@ fun LiveDataScreen(
                 Text(
                     "Read all stored diagnostic trouble codes from the DME",
                     style = MaterialTheme.typography.bodySmall,
-                    color = N54Colors.mutedForeground
+                    color = N54Colors.textMuted
                 )
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -205,12 +205,12 @@ fun LiveDataScreen(
                         Text(
                             "${dtc.code} ${if (dtc.isConfirmed) "[STORED]" else "[PENDING]"}",
                             fontWeight = FontWeight.Bold,
-                            color = if (dtc.isConfirmed) N54Colors.destructive else N54Colors.yellow
+                            color = if (dtc.isConfirmed) N54Colors.destructive else N54Colors.badgeMedium
                         )
                         matched?.let {
                             Text(it.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                            Text(it.description, style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
-                        } ?: Text("No N54 reference for this code in local DB", style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
+                            Text(it.description, style = MaterialTheme.typography.bodySmall, color = N54Colors.textMuted)
+                        } ?: Text("No N54 reference for this code in local DB", style = MaterialTheme.typography.bodySmall, color = N54Colors.textMuted)
                     }
                     Spacer(Modifier.height(8.dp))
                 }
@@ -303,12 +303,12 @@ private fun LiveTile(
 ) {
     val bg = when {
         crit -> N54Colors.destructive.copy(alpha = 0.15f)
-        warn -> N54Colors.yellow.copy(alpha = 0.15f)
+        warn -> N54Colors.badgeMedium.copy(alpha = 0.15f)
         else -> N54Colors.surface
     }
     val valueColor = when {
         crit -> N54Colors.destructive
-        warn -> N54Colors.yellow
+        warn -> N54Colors.badgeMedium
         else -> MaterialTheme.colorScheme.onSurface
     }
     Card(
@@ -317,7 +317,7 @@ private fun LiveTile(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(Modifier.padding(12.dp)) {
-            Text(label, style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
+            Text(label, style = MaterialTheme.typography.bodySmall, color = N54Colors.textMuted)
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = valueColor)
                 Spacer(Modifier.width(4.dp))

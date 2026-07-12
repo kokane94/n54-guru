@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF0C0F14</color>
-    <color name="white">#FFF1F2F5</color>
-    <color name="n54_background">#FF0C0F14</color>
-    <color name="n54_surface">#FF13161D</color>
-    <color name="n54_primary">#FFFF7F11</color>
-    <color name="n54_accent">#FF29B6F6</color>
-    <color name="n54_muted">#FF7F8C9A</color>
-    <color name="n54_border">#FF2A2F3A</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- N54 Guru dark theme -->
+    <color name="n54_background">#FF0B0E14</color>
+    <color name="n54_surface">#FF151922</color>
+    <color name="n54_primary">#FFFF6A2C</color>
+    <color name="n54_on_primary">#FFFFFFFF</color>
+    <color name="n54_text_primary">#FFF1F2F5</color>
+    <color name="n54_text_secondary">#FF9AA3B2</color>
 </resources>

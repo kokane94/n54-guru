@@ -7,130 +7,77 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-/**
- * N54 Guru design system, ported from the Base44 web app.
- *
- * The Base44 app uses a dark automotive theme:
- *   - background:  ~#0c0f14  (hsl 220 20% 6%)
- *   - card surface: ~#13161d  (hsl 220 18% 10%)
- *   - primary:      ~#ff7f11  (hsl 25 100% 55%) — turbo/orange
- *   - accent:       ~#29b6f6  (hsl 200 80% 50%) — diagnostics/cyan
- *   - muted text:   ~#7f8c9a  (hsl 215 15% 55%)
- *   - destructive:  ~#ef4444  (red)
- *
- * Only the dark scheme is used for the Android app. A light scheme is kept
- * for preview/semantics but will still look dark-ish because the brand is
- * built around the dark garage-dash aesthetic.
- */
-
-private val Background = Color(0xFF0C0F14)
-private val Surface = Color(0xFF13161D)
-private val SurfaceVariant = Color(0xFF1A1E27)
-private val Primary = Color(0xFFFF7F11)
-private val OnPrimary = Color(0xFFFFFFFF)
-private val Secondary = Color(0xFF1E232C)
-private val OnSecondary = Color(0xFFE5E8ED)
-private val Accent = Color(0xFF29B6F6)
-private val OnAccent = Color(0xFFFFFFFF)
-private val Muted = Color(0xFF151922)
-private val MutedForeground = Color(0xFF7F8C9A)
-private val Border = Color(0xFF2A2F3A)
-private val Destructive = Color(0xFFEF4444)
-private val DestructiveForeground = Color(0xFFFEF2F2)
-private val Emerald = Color(0xFF34D399)
-private val Yellow = Color(0xFFFACC15)
-private val Violet = Color(0xFFA78BFA)
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = Primary.copy(alpha = 0.15f),
-    onPrimaryContainer = Primary,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = Secondary,
-    onSecondaryContainer = OnSecondary,
-    tertiary = Accent,
-    onTertiary = OnAccent,
-    tertiaryContainer = Accent.copy(alpha = 0.15f),
-    onTertiaryContainer = Accent,
-    background = Background,
-    onBackground = Color(0xFFF1F2F5),
-    surface = Surface,
-    onSurface = Color(0xFFF1F2F5),
-    surfaceVariant = SurfaceVariant,
-    onSurfaceVariant = MutedForeground,
-    error = Destructive,
-    onError = DestructiveForeground,
-    errorContainer = Destructive.copy(alpha = 0.15f),
-    onErrorContainer = Destructive,
-    outline = Border,
-    outlineVariant = Border.copy(alpha = 0.6f),
-    scrim = Color.Black.copy(alpha = 0.7f),
-    inverseSurface = Color(0xFFE5E8ED),
-    inverseOnSurface = Background,
-    inversePrimary = Primary
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = Primary.copy(alpha = 0.12f),
-    onPrimaryContainer = Color(0xFF7A3D0C),
-    secondary = Color(0xFFE5E8ED),
-    onSecondary = Color(0xFF1A1E27),
-    secondaryContainer = Color(0xFFDEE2E8),
-    onSecondaryContainer = Color(0xFF1A1E27),
-    tertiary = Accent,
-    onTertiary = OnAccent,
-    tertiaryContainer = Accent.copy(alpha = 0.12f),
-    onTertiaryContainer = Color(0xFF0C4A6E),
-    background = Color(0xFFF8F9FB),
-    onBackground = Color(0xFF0C0F14),
-    surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF0C0F14),
-    surfaceVariant = Color(0xFFF1F3F6),
-    onSurfaceVariant = Color(0xFF4B5563),
-    error = Destructive,
-    onError = DestructiveForeground,
-    errorContainer = Destructive.copy(alpha = 0.12f),
-    onErrorContainer = Destructive,
-    outline = Color(0xFFD1D5DB),
-    outlineVariant = Color(0xFFE5E7EB),
-    scrim = Color.Black.copy(alpha = 0.5f),
-    inverseSurface = Color(0xFF1A1E27),
-    inverseOnSurface = Color(0xFFF1F2F5),
-    inversePrimary = Primary
-)
-
-/**
- * Extended brand colors that are not part of Material3's standard color
- * scheme but are used repeatedly across N54 screens.
- */
 object N54Colors {
-    val background: Color get() = Background
-    val surface: Color get() = Surface
-    val surfaceVariant: Color get() = SurfaceVariant
-    val primary: Color get() = Primary
-    val accent: Color get() = Accent
-    val mutedForeground: Color get() = MutedForeground
-    val border: Color get() = Border
-    val destructive: Color get() = Destructive
-    val emerald: Color get() = Emerald
-    val yellow: Color get() = Yellow
-    val violet: Color get() = Violet
-    val muted: Color get() = Muted
+    // Dark theme (matches Base44 screenshots)
+    val background = Color(0xFF0B0E14)
+    val surface = Color(0xFF151922)
+    val surfaceVariant = Color(0xFF1C2030)
+    val border = Color(0xFF2A2F3D)
+
+    val primary = Color(0xFFFF6A2C)
+    val primarySoft = Color(0x33FF6A2C)
+    val onPrimary = Color(0xFFFFFFFF)
+
+    val accent = Color(0xFFE67E22)
+    val accentSoft = Color(0x33E67E22)
+
+    val textPrimary = Color(0xFFF1F2F5)
+    val textSecondary = Color(0xFF9AA3B2)
+    val textMuted = Color(0xFF6B7280)
+
+    val chipUnselectedBg = Color(0xFF202637)
+    val chipUnselectedText = Color(0xFF9AA3B2)
+
+    val badgeCritical = Color(0xFFE53935)
+    val badgeCriticalBg = Color(0x26E53935)
+    val badgeHigh = Color(0xFFFF6A6A)
+    val badgeHighBg = Color(0x26FF6A6A)
+    val badgeMedium = Color(0xFFFFB74D)
+    val badgeMediumBg = Color(0x26FFB74D)
+    val badgeLow = Color(0xFF4FC3F7)
+    val badgeLowBg = Color(0x264FC3F7)
+
+    val beginner = Color(0xFF4ADE80)
+    val beginnerBg = Color(0x264ADE80)
+    val intermediate = Color(0xFFFFB74D)
+    val intermediateBg = Color(0x26FFB74D)
+
+    val destructive = Color(0xFFEF5350)
+    val emerald = Color(0xFF66BB6A)
+    val violet = Color(0xFF9575CD)
 }
+
+private val n54DarkScheme = darkColorScheme(
+    background = N54Colors.background,
+    surface = N54Colors.surface,
+    onBackground = N54Colors.textPrimary,
+    onSurface = N54Colors.textPrimary,
+    primary = N54Colors.primary,
+    onPrimary = N54Colors.onPrimary,
+    secondary = N54Colors.accent,
+    outline = N54Colors.border,
+    surfaceVariant = N54Colors.surfaceVariant
+)
+
+private val n54LightScheme = lightColorScheme(
+    background = Color(0xFFF8F6F4),
+    surface = Color(0xFFFFFFFF),
+    onBackground = Color(0xFF1B1C1E),
+    onSurface = Color(0xFF1B1C1E),
+    primary = Color(0xFFFF6A00),
+    onPrimary = Color(0xFFFFFFFF),
+    secondary = Color(0xFF3950E6),
+    outline = Color(0xFFE9E6E0),
+    surfaceVariant = Color(0xFFF1EEEA)
+)
 
 @Composable
 fun N54GuruTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (darkTheme) n54DarkScheme else n54LightScheme,
         typography = N54Typography,
         content = content
     )

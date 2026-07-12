@@ -2,221 +2,112 @@ package com.example.n54guru.knowledge
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.n54guru.ui.theme.*
 
-/**
- * Build path for the N54, organized by stage. Inspired by the Base44 Mod
- * Guide structure. Each stage lists mods in priority order, with rough cost
- * and what it enables.
- */
-object N54ModGuide {
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ModGuideScreen(onDetail: (String) -> Unit) {
+    var selectedStage by remember { mutableStateOf(0) }
 
-    data class ModItem(
-        val title: String,
-        val priority: String,    // critical, recommended, optional
-        val description: String,
-        val cost: String,
-        val enables: String
-    )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(N54Colors.background)
+            .padding(16.dp)
+    ) {
+        N54ScreenHeader(title = "Mod Guide", subtitle = "Build your N54 by stage")
 
-    data class Stage(
-        val name: String,
-        val goal: String,
-        val items: List<ModItem>
-    )
+        Spacer(Modifier.height(12.dp))
 
-    val STAGES: List<Stage> = listOf(
-        Stage(
-            name = "Stage 1 — Reliability",
-            goal = "Stock power, bulletproof the weak points before adding any power.",
-            items = listOf(
-                ModItem(
-                    "Aluminum Charge Pipe",
-                    "critical",
-                    "Replace the plastic OEM charge pipe. WILL crack under boost. ARM / BMS / VRSF.",
-                    "$100-180",
-                    "Allows safe stock and tuned boost"
-                ),
-                ModItem(
-                    "Index 12 Injectors",
-                    "critical",
-                    "Earlier index injectors are failure-prone. Index 12 is the latest revision.",
-                    "$200-300",
-                    "Prevents misfire codes and lean conditions"
-                ),
-                ModItem(
-                    "Oil Catch Can",
-                    "recommended",
-                    "Reduces carbon buildup on intake valves by catching oil vapors from the PCV system.",
-                    "$80-150",
-                    "Slows intake valve carbon buildup"
-                ),
-                ModItem(
-                    "Walnut Blast Intake Valves",
-                    "recommended",
-                    "Direct injection = carbon buildup. Walnut blasting cleans them. Do every 50k miles.",
-                    "$300-500 shop / $100-150 DIY",
-                    "Restores idle quality and prevents misfires"
-                ),
-                ModItem(
-                    "Proactive Water Pump",
-                    "recommended",
-                    "Electric water pump is a known failure. Replace proactively around 60-80k miles.",
-                    "$200-400",
-                    "Prevents overheating and head warping"
+        // Stage chips
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState())
+        ) {
+            STAGES.forEachIndexed { index, stage ->
+                N54StageChip(
+                    label = "Stage $index",
+                    selected = selectedStage == index,
+                    onClick = { selectedStage = index },
+                    leadingIcon = Icons.Filled.Bolt
                 )
-            )
-        ),
-        Stage(
-            name = "Stage 2 — Bolt-On Power",
-            goal = "Add safe power through tunes, intakes, and exhaust.",
-            items = listOf(
-                ModItem(
-                    "Tune (JB4 or MHD Flash)",
-                    "critical",
-                    "JB4 = plug-and-play piggyback tuner, Map 1-7. MHD = direct ECU flash, more control. MHD is most popular for N54.",
-                    "$400-700",
-                    "Unlocks the N54's tuning potential"
-                ),
-                ModItem(
-                    "Catless Downpipes",
-                    "critical",
-                    "Massive restriction from stock cats. Catless = biggest single bolt-on gain. Expect +30-50 WHP.",
-                    "$400-800",
-                    "Unlocks turbo spool and top-end power"
-                ),
-                ModItem(
-                    "Front Mount Intercooler (FMIC)",
-                    "recommended",
-                    "Stock intercooler heat soaks quickly. FMIC keeps intake temps low for consistent power.",
-                    "$400-800",
-                    "Prevents heat-soak power loss"
-                ),
-                ModItem(
-                    "Cold Air Intake",
-                    "optional",
-                    "Small gains but better turbo sound. Mostly for aesthetics and sound at this level.",
-                    "$200-400",
-                    "Marginal power, mostly sound"
-                ),
-                ModItem(
-                    "Colder Spark Plugs",
-                    "recommended",
-                    "Stock heat range plugs can't handle added boost. One step colder prevents detonation.",
-                    "$40-80",
-                    "Required for any tuned setup"
-                )
-            )
-        ),
-        Stage(
-            name = "Stage 3 — Big Power",
-            goal = "Maxing out the stock turbos. 400-500+ WHP.",
-            items = listOf(
-                ModItem(
-                    "E85 Flex Fuel",
-                    "critical",
-                    "E85 fuel allows much more aggressive timing. Huge power gains. Requires port injection or blend.",
-                    "$500-1000 for kit",
-                    "30-50% more power on E85 vs 91 octane"
-                ),
-                ModItem(
-                    "Upgraded LPFP",
-                    "critical",
-                    "Stock LPFP can't flow enough for E85. Upgraded internals required for any ethanol content.",
-                    "$300-600",
-                    "Required for E85 reliability"
-                ),
-                ModItem(
-                    "Meth/Water Injection",
-                    "recommended",
-                    "Alternative to E85. Sprays water/methanol into intake for knock resistance and charge cooling.",
-                    "$300-600",
-                    "Allows more timing advance, safer high-boost"
-                ),
-                ModItem(
-                    "Cat-Back Exhaust",
-                    "recommended",
-                    "Reduces backpressure after the turbos. Helps with top-end power and turbo spool.",
-                    "$500-1500",
-                    "Improved sound + small power gain"
-                ),
-                ModItem(
-                    "Oil Cooler",
-                    "recommended",
-                    "Oil temps climb fast with added power. Oil cooler keeps temps safe during spirited driving.",
-                    "$400-800",
-                    "Critical for track / sustained high-load"
-                )
-            )
-        ),
-        Stage(
-            name = "Stage 4 — Built Motor",
-            goal = "Beyond stock turbo limits. 500+ WHP, requires built bottom end.",
-            items = listOf(
-                ModItem(
-                    "Upgraded Turbos (Hybrid / Big Single)",
-                    "critical",
-                    "Stock turbos max around 520 WHP. Upgraded turbos open up massive power potential.",
-                    "$2500-5000+",
-                    "500-700+ WHP depending on setup"
-                ),
-                ModItem(
-                    "Built Transmission",
-                    "critical",
-                    "Stock trans/clutch won't hold. 6MT needs built internals, auto needs upgraded clutch packs.",
-                    "$2000-4000+",
-                    "Required to put down the power"
-                ),
-                ModItem(
-                    "Port Injection Kit",
-                    "recommended",
-                    "Port injection + direct injection combo for enough fuel flow at high HP. Required for 600+ WHP.",
-                    "$1000-2000",
-                    "Required at high power levels"
-                ),
-                ModItem(
-                    "Larger FMIC",
-                    "recommended",
-                    "Big turbo = big heat. Need a serious FMIC to keep charge temps manageable.",
-                    "$600-1500",
-                    "Required with upgraded turbos"
-                ),
-                ModItem(
-                    "Forged Internals",
-                    "critical",
-                    "Stock internals hold to ~600 WHP reliably. Beyond that, forged rods and pistons are smart insurance.",
-                    "$3000-5000+",
-                    "Required to push past stock limits safely"
-                ),
-                ModItem(
-                    "Upgraded HPFP",
-                    "critical",
-                    "Stock HPFP maxes out with big turbos. Upgraded cam follower and internals required.",
-                    "$500-1000",
-                    "Required for fueling"
-                )
-            )
-        )
-    )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        val stage = STAGES[selectedStage]
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Stage intro card
+            N54Card {
+                Text(stage.title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = N54Colors.textPrimary)
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Bolt, contentDescription = null, tint = N54Colors.primary, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stage.power, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = N54Colors.primary)
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(stage.description, fontSize = 14.sp, color = N54Colors.textSecondary)
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Mod cards
+            stage.mods.forEach { mod ->
+                ModCard(mod, onClick = { onDetail(mod.id) })
+                Spacer(Modifier.height(10.dp))
+            }
+
+            Spacer(Modifier.height(40.dp))
+        }
+    }
+}
+
+@Composable
+private fun ModCard(mod: ModItem, onClick: () -> Unit) {
+    N54Card(onClick = onClick) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(mod.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = N54Colors.textPrimary)
+                Text(mod.brand, fontSize = 13.sp, color = N54Colors.textMuted)
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(mod.price, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = N54Colors.primary)
+                N54SeverityBadge(mod.priority)
+            }
+            Spacer(Modifier.width(8.dp))
+            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = N54Colors.textMuted, modifier = Modifier.size(22.dp))
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModGuideScreen() {
-    var selectedStageIndex by remember { mutableStateOf(0) }
-    val stage = N54ModGuide.STAGES[selectedStageIndex]
+fun ModDetailScreen(modId: String, onBack: () -> Unit) {
+    val mod = STAGES.flatMap { it.mods }.find { it.id == modId } ?: return
 
     Column(
         modifier = Modifier
@@ -225,81 +116,86 @@ fun ModGuideScreen() {
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        N54ScreenHeader(
-            title = "Mod Guide",
-            subtitle = "Build your N54 by stage"
-        )
-        Spacer(Modifier.height(16.dp))
+        N54BackButton(onBack)
+        Spacer(Modifier.height(8.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            N54ModGuide.STAGES.forEachIndexed { index, s ->
-                N54FilterChip(
-                    label = s.name.substringBefore(" —"),
-                    selected = selectedStageIndex == index,
-                    onClick = { selectedStageIndex = index }
-                )
-            }
-        }
+        N54ScreenHeader(title = mod.name, subtitle = mod.brand, icon = Icons.Filled.Build)
         Spacer(Modifier.height(16.dp))
 
         N54Card {
-            Text(stage.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(4.dp))
-            Text(stage.goal, style = MaterialTheme.typography.bodyMedium, color = N54Colors.mutedForeground)
-        }
-        Spacer(Modifier.height(16.dp))
-
-        stage.items.forEach { item -> ModItemCard(item)
-            Spacer(Modifier.height(10.dp))
+            Text(mod.price, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = N54Colors.primary)
+            Spacer(Modifier.height(6.dp))
+            N54SeverityBadge(mod.priority)
+            Spacer(Modifier.height(16.dp))
+            Text(mod.description, color = N54Colors.textSecondary)
         }
     }
 }
 
-@Composable
-private fun ModItemCard(item: N54ModGuide.ModItem) {
-    val priorityColor = when (item.priority) {
-        "critical" -> N54Colors.destructive
-        "recommended" -> N54Colors.yellow
-        else -> N54Colors.mutedForeground
-    }
-    val priorityLabel = when (item.priority) {
-        "critical" -> "Must-Have"
-        "recommended" -> "Recommended"
-        else -> "Optional"
-    }
+data class Stage(
+    val title: String,
+    val power: String,
+    val description: String,
+    val mods: List<ModItem>
+)
 
-    N54Card {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            N54PriorityBadge(priorityLabel, priorityColor)
-            Spacer(Modifier.width(10.dp))
-            Text(
-                item.title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        Text(
-            item.description,
-            style = MaterialTheme.typography.bodySmall,
-            color = N54Colors.mutedForeground
+data class ModItem(
+    val id: String,
+    val name: String,
+    val brand: String,
+    val price: String,
+    val priority: String,
+    val description: String
+)
+
+val STAGES = listOf(
+    Stage(
+        title = "Stage 0 — Reliability",
+        power = "~300 WHP (stock)",
+        description = "Essential reliability mods before adding power. These address known N54 weak points.",
+        mods = listOf(
+            ModItem("cp", "Charge Pipe Upgrade", "ARM Motorsports / BMS", "$100-180", "Must-Have", "Stock charge pipe is plastic and cracks under boost. Upgrade prevents boost leaks and catastrophic failure."),
+            ModItem("occ", "Oil Catch Can", "Burger Motorsports / Mishimoto", "$80-200", "Recommended", "Reduces carbon buildup on intake valves and keeps intake tract clean."),
+            ModItem("inj", "Index 12 Injectors", "BMW OEM", "$350-500 (set)", "Must-Have", "Index 12 is the latest revision and most reliable. Earlier index injectors leak and cause misfires."),
+            ModItem("wb", "Walnut Blast", "Service", "$300-500", "Recommended", "Clean carbon buildup from intake valves to restore compression and idle quality."),
+            ModItem("wp", "Water Pump + Thermostat", "BMW OEM / Pierburg", "$200-400", "Must-Have", "Electric water pump is a common failure point; replace preventively to avoid overheating.")
         )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Cost: ${item.cost}",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.SemiBold
+    ),
+    Stage(
+        title = "Stage 1 — Bolt-Ons",
+        power = "~350-400 WHP",
+        description = "Basic bolt-ons with stock turbos. No internal engine work required.",
+        mods = listOf(
+            ModItem("tune", "ECU Tune", "MHD / Bootmod3 / JB4", "$300-600", "Must-Have", "Unlocks power from bolt-ons and controls boost/fueling safely."),
+            ModItem("dp", "Downpipes", "VRSF / BMS / Active", "$300-600", "Recommended", "Reduces exhaust backpressure, lowers EGTs, and improves turbo spool."),
+            ModItem("fmic", "Intercooler", "Wagner / VRSF / ETS", "$500-1000", "Recommended", "Keeps intake temps down on repeated pulls; critical in hot climates."),
+            ModItem("intake", "Intake", "BMS / Injen / AFE", "$200-400", "Optional", "Adds turbo sound and marginally improves flow."),
+            ModItem("plugs", "Spark Plugs / Coils", "NGK 95770 / Delphi", "$100-300", "Must-Have", "One-step colder plugs and fresh coils are mandatory for tuned cars.")
         )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            "→ ${item.enables}",
-            style = MaterialTheme.typography.bodySmall,
-            color = N54Colors.primary
+    ),
+    Stage(
+        title = "Stage 2 — Hybrid / Stock Frame",
+        power = "~400-550 WHP",
+        description = "Upgraded stock-frame turbos, full bolt-ons, and supporting fueling.",
+        mods = listOf(
+            ModItem("hybrid", "Hybrid Turbos", "Pure / VTT / RB", "$1500-2500", "Must-Have", "Upgraded stock-frame turbos with larger wheels for more flow."),
+            ModItem("pi", "Port Injection", "BMS / Fuel-It", "$800-1500", "Must-Have", "Adds secondary injectors to fuel high-power targets beyond DI limits."),
+            ModItem("lpfp", "Low Pressure Fuel Pump", "Fuel-It / Walbro", "$400-800", "Must-Have", "Supplies enough fuel volume for port injection and high boost."),
+            ModItem(" clutch", "Upgraded Clutch", "SPEC / MFactory", "$1500-3000", "Recommended", "Stock clutch will slip above ~400 whp."),
+            ModItem("cooling", "Cooling Upgrades", "CSF / Wagner", "$500-1200", "Recommended", "Bigger radiator and oil cooler help sustain power on track.")
         )
-    }
-}
+    ),
+    Stage(
+        title = "Stage 3 — Big Turbo",
+        power = "~550-700+ WHP",
+        description = "Beyond stock turbo limits. Requires turbo upgrade and significant supporting mods.",
+        mods = listOf(
+            ModItem("bt", "Turbo Upgrade", "Vargas Stage 1-3 / Pure Stage 2", "$2000-5000", "Must-Have", "Large single or big twin setup to move serious air."),
+            ModItem("trans", "Built Transmission (6MT) / Upgraded Clutch", "OS Giken / Competition Clutch", "$1500-4000", "Must-Have", "Stock 6MT can handle ~500 whp; above that build it or swap auto."),
+            ModItem("fuel", "Fueling Upgrade (PI + DI)", "VTT / Fuel-It", "$800-2000", "Must-Have", "High-flow DI injectors + port injection for full fueling."),
+            ModItem("fmic2", "Upgraded Intercooler (Race FMIC)", "Wagner / ETS", "$800-1500", "Must-Have", "Large volume intercooler to keep IATs in check at high boost."),
+            ModItem("internals", "Engine Internals (Rods/Pistons)", "CP / Manley / Carrillo", "$3000-6000+", "Recommended", "At 700+ whp, forged rods and pistons reduce the risk of catastrophic failure."),
+            ModItem("hpfp", "HPFP Upgrade", "Autotech / VTT", "$300-600", "Must-Have", "High-pressure fuel pump upgrade to support more DI fueling.")
+        )
+    )
+)

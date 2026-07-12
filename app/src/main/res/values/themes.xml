@@ -1,9 +1,16 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.N54Guru" parent="android:Theme.Material.NoActionBar">
-        <item name="android:statusBarColor" tools:targetApi="l">@color/n54_background</item>
-        <item name="android:navigationBarColor" tools:targetApi="l">@color/n54_background</item>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme is dark with no action bar -->
+    <style name="Theme.N54Guru" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:statusBarColor">@color/n54_background</item>
+        <item name="android:navigationBarColor">@color/n54_surface</item>
         <item name="android:windowBackground">@color/n54_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorPrimary">@color/n54_primary</item>
+        <item name="colorOnPrimary">@color/n54_on_primary</item>
+        <item name="colorPrimaryContainer">@color/n54_surface</item>
+        <item name="colorSurface">@color/n54_surface</item>
+        <item name="colorOnSurface">@color/n54_text_primary</item>
         <item name="android:colorBackground">@color/n54_background</item>
-        <item name="android:textColorPrimary">@color/white</item>
     </style>
 </resources>

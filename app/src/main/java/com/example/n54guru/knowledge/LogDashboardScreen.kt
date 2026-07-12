@@ -87,13 +87,13 @@ fun LogDashboardScreen(source: N54DmeLiveDataSource) {
                     Text(
                         "${status.sampleCount} samples captured",
                         style = MaterialTheme.typography.bodySmall,
-                        color = N54Colors.mutedForeground
+                        color = N54Colors.textMuted
                     )
                 }
             }
             status.currentFile?.let { path ->
                 Spacer(Modifier.height(4.dp))
-                Text("File: $path", style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
+                Text("File: $path", style = MaterialTheme.typography.bodySmall, color = N54Colors.textMuted)
             }
             status.error?.let { err ->
                 Spacer(Modifier.height(4.dp))
@@ -136,7 +136,7 @@ fun LogDashboardScreen(source: N54DmeLiveDataSource) {
             Text(
                 "No logs yet",
                 style = MaterialTheme.typography.bodySmall,
-                color = N54Colors.mutedForeground
+                color = N54Colors.textMuted
             )
         } else {
             logs.forEach { file ->
@@ -177,7 +177,7 @@ private fun LogFileRow(file: File, onView: () -> Unit, onShare: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(file.name, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                Text("$ts • ${file.length() / 1024} KB", style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
+                Text("$ts • ${file.length() / 1024} KB", style = MaterialTheme.typography.bodySmall, color = N54Colors.textMuted)
             }
             TextButton(onClick = onShare) {
                 Icon(Icons.Filled.Save, contentDescription = null, tint = N54Colors.primary)
@@ -209,7 +209,7 @@ private fun LogViewerDialog(file: File, onDismiss: () -> Unit) {
                     }
                     if (lines.size > 31) {
                         Spacer(Modifier.height(4.dp))
-                        Text("...${lines.size - 31} more rows...", style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
+                        Text("...${lines.size - 31} more rows...", style = MaterialTheme.typography.bodySmall, color = N54Colors.textMuted)
                     }
                 }
             }
