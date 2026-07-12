@@ -2,8 +2,6 @@ package com.example.n54guru.knowledge
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.n54guru.ui.theme.*
 
 /**
  * Build path for the N54, organized by stage. Inspired by the Base44 Mod
@@ -222,19 +221,16 @@ fun ModGuideScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(N54Colors.background)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text("Mod Guide", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
-        Text(
-            "Build your N54 by stage",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        N54ScreenHeader(
+            title = "Mod Guide",
+            subtitle = "Build your N54 by stage"
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-        // Stage selector
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -242,29 +238,34 @@ fun ModGuideScreen() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             N54ModGuide.STAGES.forEachIndexed { index, s ->
-                FilterChip(
+                N54FilterChip(
+                    label = s.name.substringBefore(" —"),
                     selected = selectedStageIndex == index,
-                    onClick = { selectedStageIndex = index },
-                    label = { Text(s.name.substringBefore(" —"), fontSize = 12.sp) }
+                    onClick = { selectedStageIndex = index }
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
 
-        Text(stage.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text(stage.goal, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        N54Card {
+            Text(stage.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Text(stage.goal, style = MaterialTheme.typography.bodyMedium, color = N54Colors.mutedForeground)
+        }
         Spacer(Modifier.height(16.dp))
 
-        stage.items.forEach { item -> ModItemCard(item) }
+        stage.items.forEach { item -> ModItemCard(item)
+            Spacer(Modifier.height(10.dp))
+        }
     }
 }
 
 @Composable
 private fun ModItemCard(item: N54ModGuide.ModItem) {
     val priorityColor = when (item.priority) {
-        "critical" -> Color(0xFFEF4444)
-        "recommended" -> Color(0xFFF59E0B)
-        else -> Color(0xFF6B7280)
+        "critical" -> N54Colors.destructive
+        "recommended" -> N54Colors.yellow
+        else -> N54Colors.mutedForeground
     }
     val priorityLabel = when (item.priority) {
         "critical" -> "Must-Have"
@@ -272,32 +273,33 @@ private fun ModItemCard(item: N54ModGuide.ModItem) {
         else -> "Optional"
     }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .background(priorityColor.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(priorityLabel, fontSize = 10.sp, color = priorityColor, fontWeight = FontWeight.SemiBold)
-                }
-                Spacer(Modifier.width(8.dp))
-                Text(item.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(item.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Cost: ${item.cost}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
-            }
-            Spacer(Modifier.height(2.dp))
-            Text("→ ${item.enables}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+    N54Card {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            N54PriorityBadge(priorityLabel, priorityColor)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                item.title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
         }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            item.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = N54Colors.mutedForeground
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Cost: ${item.cost}",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "→ ${item.enables}",
+            style = MaterialTheme.typography.bodySmall,
+            color = N54Colors.primary
+        )
     }
 }

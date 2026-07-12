@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.n54guru.ui.theme.*
 
 /**
  * AI Diagnostics — describe symptoms, get N54-specific likely causes.
@@ -132,6 +133,7 @@ object SymptomAnalyzer {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AIDiagnosticsScreen() {
     var symptoms by remember { mutableStateOf("") }
@@ -140,46 +142,36 @@ fun AIDiagnosticsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(N54Colors.background)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(Color(0xFF8B5CF6).copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = Color(0xFF8B5CF6), modifier = Modifier.size(20.dp))
-            }
-            Spacer(Modifier.width(8.dp))
-            Text("AI Diagnostics", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
-        }
-        Text(
-            "Describe your symptoms — get N54-specific diagnosis",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        N54ScreenHeader(
+            title = "AI Diagnostics",
+            subtitle = "Describe your symptoms — get N54-specific diagnosis",
+            icon = Icons.Filled.AutoAwesome,
+            iconTint = N54Colors.violet
         )
         Spacer(Modifier.height(16.dp))
 
-        OutlinedTextField(
+        N54TextField(
             value = symptoms,
             onValueChange = { symptoms = it },
-            label = { Text("What's happening with your N54?") },
-            placeholder = { Text("e.g. long crank when cold, occasional stalling at idle, loss of power under boost...") },
+            label = "What's happening with your N54?",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
+                .height(140.dp),
+            singleLine = false,
+            maxLines = 6,
+            minLines = 5
         )
         Spacer(Modifier.height(8.dp))
 
-        Button(
+        N54PrimaryButton(
+            text = "Analyze Symptoms",
             onClick = { result = SymptomAnalyzer.analyze(symptoms) },
             modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Analyze Symptoms")
-        }
+        )
         Spacer(Modifier.height(20.dp))
 
         result?.let { DiagnosisResultCard(it) }
@@ -189,9 +181,9 @@ fun AIDiagnosticsScreen() {
 @Composable
 private fun DiagnosisResultCard(result: SymptomAnalyzer.DiagnosisResult) {
     val urgencyColor = when (result.urgency) {
-        "critical" -> Color(0xFFEF4444)
-        "soon" -> Color(0xFFF59E0B)
-        else -> Color(0xFF6B7280)
+        "critical" -> N54Colors.destructive
+        "soon" -> N54Colors.yellow
+        else -> N54Colors.mutedForeground
     }
     val urgencyLabel = when (result.urgency) {
         "critical" -> "Fix Immediately"
@@ -199,74 +191,55 @@ private fun DiagnosisResultCard(result: SymptomAnalyzer.DiagnosisResult) {
         else -> "Monitor"
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .background(urgencyColor.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(urgencyLabel, fontSize = 11.sp, color = urgencyColor, fontWeight = FontWeight.Bold)
-                }
-            }
-            Spacer(Modifier.height(12.dp))
+    N54Card {
+        N54PriorityBadge(urgencyLabel, urgencyColor)
+        Spacer(Modifier.height(12.dp))
 
-            if (result.likelyCauses.isNotEmpty()) {
-                Text("Likely Causes", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(4.dp))
-                result.likelyCauses.forEach { cause ->
-                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(cause.cause, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-                            Spacer(Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        when (cause.probability) {
-                                            "high" -> Color(0xFFEF4444)
-                                            "medium" -> Color(0xFFF59E0B)
-                                            else -> Color(0xFF6B7280)
-                                        }.copy(alpha = 0.2f),
-                                        RoundedCornerShape(4.dp)
-                                    )
-                                    .padding(horizontal = 6.dp, vertical = 1.dp)
-                            ) {
-                                Text(
-                                    cause.probability.uppercase(),
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+        if (result.likelyCauses.isNotEmpty()) {
+            N54SectionHeader("Likely Causes")
+            result.likelyCauses.forEach { cause ->
+                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            cause.cause,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        val probColor = when (cause.probability) {
+                            "high" -> N54Colors.destructive
+                            "medium" -> N54Colors.yellow
+                            else -> N54Colors.mutedForeground
                         }
-                        Text(cause.explanation, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        N54PriorityBadge(cause.probability.uppercase(), probColor)
                     }
+                    Text(
+                        cause.explanation,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = N54Colors.mutedForeground
+                    )
                 }
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(8.dp))
             }
-
-            if (result.recommendedActions.isNotEmpty()) {
-                Text("Recommended Actions", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(4.dp))
-                result.recommendedActions.forEach { action ->
-                    Row(modifier = Modifier.padding(vertical = 2.dp)) {
-                        Text("• ", style = MaterialTheme.typography.bodyMedium)
-                        Text(action, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-            }
-
-            Text("Estimated cost: ${result.estimatedCost}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(8.dp))
-            Text(
-                result.additionalNotes,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
+
+        if (result.recommendedActions.isNotEmpty()) {
+            N54SectionHeader("Recommended Actions")
+            result.recommendedActions.forEach { N54Bullet(it) }
+        }
+
+        Spacer(Modifier.height(12.dp))
+        Text(
+            "Estimated cost: ${result.estimatedCost}",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = N54Colors.primary
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            result.additionalNotes,
+            style = MaterialTheme.typography.bodySmall,
+            color = N54Colors.mutedForeground
+        )
     }
 }

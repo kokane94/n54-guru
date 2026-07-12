@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.n54guru.ui.theme.*
 
 /**
  * Curated N54 knowledge base, sourced from public BMW technical documentation
@@ -237,48 +238,39 @@ fun KnowledgeBaseScreen(onArticleClick: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(N54Colors.background)
             .padding(16.dp)
     ) {
-        Text("Knowledge Base", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
-        Text(
-            "N54 deep dives, how-tos, and reference",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        N54ScreenHeader(
+            title = "Knowledge Base",
+            subtitle = "N54 deep dives, how-tos, and reference"
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-        OutlinedTextField(
+        N54TextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            label = { Text("Search articles...") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            label = "Search articles...",
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(12.dp))
 
-        // Category chips
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             N54KnowledgeBase.CATEGORIES.forEach { cat ->
-                val isSelected = selectedCategory == cat
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { selectedCategory = cat },
-                    label = {
-                        Text(
-                            if (cat == "all") "All" else cat.replaceFirstChar { it.uppercase() },
-                            fontSize = 12.sp
-                        )
-                    }
+                val label = if (cat == "all") "All" else cat.replaceFirstChar { it.uppercase() }
+                N54FilterChip(
+                    label = label,
+                    selected = selectedCategory == cat,
+                    onClick = { selectedCategory = cat }
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(articles, key = { it.id }) { article ->
                 ArticleCard(article = article, onClick = { onArticleClick(article.id) })
             }
@@ -290,52 +282,37 @@ fun KnowledgeBaseScreen(onArticleClick: (String) -> Unit) {
 @Composable
 private fun ArticleCard(article: N54KnowledgeBase.Article, onClick: () -> Unit) {
     val priorityColor = when (article.priority) {
-        "critical" -> Color(0xFFEF4444)
-        "soon" -> Color(0xFFF59E0B)
-        else -> Color(0xFF6B7280)
+        "critical" -> N54Colors.destructive
+        "soon" -> N54Colors.yellow
+        else -> N54Colors.mutedForeground
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(priorityColor, RoundedCornerShape(4.dp))
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    article.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                article.summary,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 3
+    N54Card(onClick = onClick) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(priorityColor, RoundedCornerShape(4.dp))
             )
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AssistChip(
-                    onClick = {},
-                    label = { Text(article.category, fontSize = 10.sp) }
-                )
-                AssistChip(
-                    onClick = {},
-                    label = { Text(article.difficulty, fontSize = 10.sp) }
-                )
-                AssistChip(
-                    onClick = {},
-                    label = { Text(article.cost, fontSize = 10.sp) }
-                )
-            }
+            Spacer(Modifier.width(10.dp))
+            Text(
+                article.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            article.summary,
+            style = MaterialTheme.typography.bodySmall,
+            color = N54Colors.mutedForeground,
+            maxLines = 3
+        )
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            N54AssistChip(article.category.replaceFirstChar { it.uppercase() })
+            N54AssistChip(article.difficulty.replaceFirstChar { it.uppercase() })
+            N54AssistChip(article.cost)
         }
     }
 }
@@ -349,20 +326,30 @@ fun ArticleDetailScreen(articleId: String, onBack: () -> Unit) {
         return
     }
 
+    val priorityColor = when (article.priority) {
+        "critical" -> N54Colors.destructive
+        "soon" -> N54Colors.yellow
+        else -> N54Colors.mutedForeground
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(N54Colors.background)
             .padding(16.dp)
     ) {
-        TextButton(onClick = onBack) { Text("← Back") }
+        N54BackButton(onBack)
         Spacer(Modifier.height(8.dp))
-        Text(article.title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
-        Spacer(Modifier.height(4.dp))
+        Text(
+            article.title,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black
+        )
+        Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AssistChip(onClick = {}, label = { Text(article.category, fontSize = 10.sp) })
-            AssistChip(onClick = {}, label = { Text(article.difficulty, fontSize = 10.sp) })
-            AssistChip(onClick = {}, label = { Text(article.priority, fontSize = 10.sp) })
+            N54PriorityBadge(article.category.replaceFirstChar { it.uppercase() }, N54Colors.primary)
+            N54PriorityBadge(article.difficulty.replaceFirstChar { it.uppercase() }, N54Colors.accent)
+            N54PriorityBadge(article.priority.replaceFirstChar { it.uppercase() }, priorityColor)
         }
         Spacer(Modifier.height(16.dp))
         Text(article.summary, style = MaterialTheme.typography.bodyMedium)
@@ -373,18 +360,21 @@ fun ArticleDetailScreen(articleId: String, onBack: () -> Unit) {
         DetailSection("Fixes", article.fixes)
 
         Spacer(Modifier.height(16.dp))
-        Text("Estimated cost: ${article.cost}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+        N54Card {
+            Text(
+                "Estimated cost: ${article.cost}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = N54Colors.primary
+            )
+        }
     }
 }
 
 @Composable
 private fun DetailSection(title: String, items: List<String>) {
-    Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 4.dp))
+    N54SectionHeader(title)
     items.forEach { item ->
-        Row(modifier = Modifier.padding(vertical = 2.dp)) {
-            Text("• ", style = MaterialTheme.typography.bodyMedium)
-            Text(item, style = MaterialTheme.typography.bodyMedium)
-        }
+        N54Bullet(item)
     }
-    Spacer(Modifier.height(12.dp))
 }

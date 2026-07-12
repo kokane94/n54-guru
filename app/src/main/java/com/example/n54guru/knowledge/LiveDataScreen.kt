@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.n54guru.protocol.N54DmeLiveDataSource
+import com.example.n54guru.ui.theme.*
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -56,59 +57,76 @@ fun LiveDataScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(N54Colors.background)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        N54ScreenHeader(
+            title = "Live Data",
+            subtitle = "Real-time DME readout over K-CAN / OBD-II"
+        )
+        Spacer(Modifier.height(16.dp))
+
         // Connection status card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = if (data.isConnected)
-                    MaterialTheme.colorScheme.primaryContainer
-                else
-                    MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+        N54Card {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            if (data.isConnected) N54Colors.emerald.copy(alpha = 0.18f)
+                            else N54Colors.yellow.copy(alpha = 0.18f),
+                            RoundedCornerShape(10.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
                         Icons.Filled.Usb,
                         contentDescription = null,
-                        tint = if (data.isConnected) Color(0xFF22C55E) else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (data.isConnected) N54Colors.emerald else N54Colors.yellow
                     )
-                    Spacer(Modifier.width(8.dp))
+                }
+                Spacer(Modifier.width(10.dp))
+                Column {
                     Text(
                         if (data.isConnected) "Connected to N54 DME" else "USB Adapter Required",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Text(
+                        if (data.isConnected) "Live data @ 20 Hz over ISO 15765 / UDS"
+                        else "Plug in K-CAN cable or ELM327 OBD-II adapter",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = N54Colors.mutedForeground
+                    )
                 }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    if (data.isConnected) "Live data @ 20 Hz over ISO 15765 / UDS"
-                    else "Plug in K-CAN cable or ELM327 OBD-II adapter",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(Modifier.height(12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (!data.isConnected) {
-                        Button(onClick = {
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (!data.isConnected) {
+                    N54PrimaryButton(
+                        text = "Connect",
+                        onClick = {
                             usbDevices = N54DmeLiveDataSource.listAvailableDevicesFromContext(context)
                             showDevicePicker = usbDevices.isNotEmpty()
-                        }) { Text("Connect") }
-                    } else {
-                        OutlinedButton(onClick = { source.disconnect() }) { Text("Disconnect") }
-                        OutlinedButton(onClick = {
-                        scope.launch { source.connectCurrentDevice(context) }
-                    }) { Text("Reconnect") }
-                    }
-                    OutlinedButton(onClick = onShowPartner) { Text("AI Partner") }
+                        }
+                    )
+                } else {
+                    N54OutlinedButton(text = "Disconnect", onClick = { source.disconnect() })
+                    N54OutlinedButton(
+                        text = "Reconnect",
+                        onClick = { scope.launch { source.connectCurrentDevice(context) } }
+                    )
                 }
-                data.errorMessage?.let { err ->
-                    Spacer(Modifier.height(8.dp))
-                    Text("⚠ $err", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                }
+                N54OutlinedButton(text = "AI Partner", onClick = onShowPartner)
+            }
+            data.errorMessage?.let { err ->
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "⚠ $err",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = N54Colors.destructive
+                )
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -118,65 +136,62 @@ fun LiveDataScreen(
             LiveDataGrid(data)
             Spacer(Modifier.height(12.dp))
 
-            // DTC scan button
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Speed, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("DTC Scan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    }
-                    Text(
-                        "Read all stored diagnostic trouble codes from the DME",
-                        style = MaterialTheme.typography.bodySmall
+            N54Card {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Speed, contentDescription = null, tint = N54Colors.primary)
+                    Spacer(Modifier.width(8.dp))
+                    Text("DTC Scan", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
+                Text(
+                    "Read all stored diagnostic trouble codes from the DME",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = N54Colors.mutedForeground
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    N54PrimaryButton(
+                        text = if (isScanning) "Scanning..." else "Scan DTCs",
+                        onClick = {
+                            scope.launch {
+                                val result = source.scanDtcs()
+                                dtcScanResult = if (result.isEmpty()) "No DTCs found"
+                                else "${result.size} code(s): ${result.joinToString { it.code }}"
+                            }
+                        },
+                        enabled = !isScanning
                     )
+                    N54OutlinedButton(
+                        text = "Clear DTCs",
+                        onClick = {
+                            scope.launch {
+                                val ok = source.clearAllDtcs()
+                                dtcScanResult = if (ok) "DTCs cleared" else "Failed to clear"
+                            }
+                        }
+                    )
+                    N54OutlinedButton(
+                        text = "Read VIN + DME ID",
+                        onClick = {
+                            scope.launch {
+                                vin = source.readVin()
+                                dmeId = source.readDmeIdentification()
+                            }
+                        }
+                    )
+                }
+                dtcScanResult?.let {
                     Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    val result = source.scanDtcs()
-                                    dtcScanResult = if (result.isEmpty()) "No DTCs found"
-                                    else "${result.size} code(s): ${result.joinToString { it.code }}"
-                                }
-                            },
-                            enabled = !isScanning
-                        ) { Text(if (isScanning) "Scanning..." else "Scan DTCs") }
-                        OutlinedButton(
-                            onClick = {
-                                scope.launch {
-                                    val ok = source.clearAllDtcs()
-                                    dtcScanResult = if (ok) "DTCs cleared" else "Failed to clear"
-                                }
-                            }
-                        ) { Text("Clear DTCs") }
-                        OutlinedButton(
-                            onClick = {
-                                scope.launch {
-                                    vin = source.readVin()
-                                    dmeId = source.readDmeIdentification()
-                                }
-                            }
-                        ) { Text("Read VIN + DME ID") }
-                    }
-                    dtcScanResult?.let {
-                        Spacer(Modifier.height(8.dp))
-                        Text(it, style = MaterialTheme.typography.bodySmall)
-                    }
-                    vin?.let {
-                        Spacer(Modifier.height(8.dp))
-                        Text("VIN: $it", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
-                    }
-                    dmeId.forEach { (k, v) ->
-                        Text("$k: $v", style = MaterialTheme.typography.bodySmall)
-                    }
+                    Text(it, style = MaterialTheme.typography.bodySmall)
+                }
+                vin?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text("VIN: $it", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                }
+                dmeId.forEach { (k, v) ->
+                    Text("$k: $v", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
-            // Active DTCs list
             if (dtcs.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
                 Text("Active DTCs", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -186,45 +201,28 @@ fun LiveDataScreen(
                         dtc.code.contains(fc.code.takeLast(4), ignoreCase = true) ||
                         fc.title.lowercase().contains(dtc.code.lowercase().takeLast(4))
                     }
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (dtc.isConfirmed) Color(0xFFEF4444).copy(alpha = 0.1f)
-                            else Color(0xFFF59E0B).copy(alpha = 0.1f)
+                    N54Card {
+                        Text(
+                            "${dtc.code} ${if (dtc.isConfirmed) "[STORED]" else "[PENDING]"}",
+                            fontWeight = FontWeight.Bold,
+                            color = if (dtc.isConfirmed) N54Colors.destructive else N54Colors.yellow
                         )
-                    ) {
-                        Column(Modifier.padding(12.dp)) {
-                            Text(
-                                "${dtc.code} ${if (dtc.isConfirmed) "[STORED]" else "[PENDING]"}",
-                                fontWeight = FontWeight.Bold,
-                                color = if (dtc.isConfirmed) Color(0xFFEF4444) else Color(0xFFF59E0B)
-                            )
-                            matched?.let {
-                                Text(it.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                Text(it.description, style = MaterialTheme.typography.bodySmall)
-                            } ?: Text("No N54 reference for this code in local DB", style = MaterialTheme.typography.bodySmall)
-                        }
+                        matched?.let {
+                            Text(it.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                            Text(it.description, style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
+                        } ?: Text("No N54 reference for this code in local DB", style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
                     }
+                    Spacer(Modifier.height(8.dp))
                 }
             }
         } else {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("To connect:", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(8.dp))
-                    Text("• Plug your K-CAN cable or ELM327 OBD-II adapter into the car's diagnostic port (under hood, driver side for E93)")
-                    Spacer(Modifier.height(4.dp))
-                    Text("• Connect the USB end to your phone (USB OTG adapter required)")
-                    Spacer(Modifier.height(4.dp))
-                    Text("• Grant USB permission when prompted")
-                    Spacer(Modifier.height(4.dp))
-                    Text("• Tap Connect and select your adapter from the list")
-                }
+            N54Card {
+                Text("To connect:", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(8.dp))
+                N54Bullet("Plug your K-CAN cable or ELM327 OBD-II adapter into the car's diagnostic port (under hood, driver side for E93)")
+                N54Bullet("Connect the USB end to your phone (USB OTG adapter required)")
+                N54Bullet("Grant USB permission when prompted")
+                N54Bullet("Tap Connect and select your adapter from the list")
             }
         }
     }
@@ -257,7 +255,11 @@ fun LiveDataScreen(
 @Composable
 private fun LiveDataGrid(data: N54DmeLiveDataSource.LiveData) {
     Column {
-        Text("Live Data @ 20 Hz", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            "Live Data @ 20 Hz",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             LiveTile("RPM", data.rpm.roundToInt().toString(), "rev/min", Modifier.weight(1f))
@@ -300,21 +302,22 @@ private fun LiveTile(
     crit: Boolean = false
 ) {
     val bg = when {
-        crit -> Color(0xFFEF4444).copy(alpha = 0.15f)
-        warn -> Color(0xFFF59E0B).copy(alpha = 0.15f)
-        else -> MaterialTheme.colorScheme.surfaceVariant
+        crit -> N54Colors.destructive.copy(alpha = 0.15f)
+        warn -> N54Colors.yellow.copy(alpha = 0.15f)
+        else -> N54Colors.surface
     }
     val valueColor = when {
-        crit -> Color(0xFFEF4444)
-        warn -> Color(0xFFF59E0B)
+        crit -> N54Colors.destructive
+        warn -> N54Colors.yellow
         else -> MaterialTheme.colorScheme.onSurface
     }
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = bg)
+        colors = CardDefaults.cardColors(containerColor = bg),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(Modifier.padding(12.dp)) {
-            Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(label, style = MaterialTheme.typography.bodySmall, color = N54Colors.mutedForeground)
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = valueColor)
                 Spacer(Modifier.width(4.dp))

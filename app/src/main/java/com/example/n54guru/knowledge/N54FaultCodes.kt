@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.n54guru.knowledge.N54FaultCodes.CODE_DATA
+import com.example.n54guru.ui.theme.*
 
 /**
  * N54-specific BMW DME fault code database.
@@ -323,42 +324,44 @@ fun FaultCodesScreen(onCodeClick: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(N54Colors.background)
             .padding(16.dp)
     ) {
-        Text("Fault Codes", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
-        Text(
-            "N54-specific BMW DME fault codes with causes & fixes",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        N54ScreenHeader(
+            title = "Fault Codes",
+            subtitle = "N54-specific BMW DME fault codes with causes & fixes"
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-        OutlinedTextField(
+        N54TextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            label = { Text("Search by code or name...") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            label = "Search by code or name...",
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = N54Colors.mutedForeground) }
         )
         Spacer(Modifier.height(12.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             N54FaultCodes.CATEGORIES.forEach { sev ->
-                FilterChip(
+                val label = if (sev == "all") "All" else sev.replaceFirstChar { it.uppercase() }
+                N54FilterChip(
+                    label = label,
                     selected = selectedSeverity == sev,
-                    onClick = { selectedSeverity = sev },
-                    label = { Text(if (sev == "all") "All" else sev.replaceFirstChar { it.uppercase() }, fontSize = 12.sp) }
+                    onClick = { selectedSeverity = sev }
                 )
             }
         }
         Spacer(Modifier.height(16.dp))
 
         if (codes.isEmpty()) {
-            Text("No fault codes found", modifier = Modifier.padding(32.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "No fault codes found",
+                modifier = Modifier.padding(32.dp),
+                color = N54Colors.mutedForeground
+            )
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(codes, key = { it.code }) { code ->
                     FaultCodeCard(code = code, onClick = { onCodeClick(code.code) })
                 }
@@ -371,30 +374,45 @@ fun FaultCodesScreen(onCodeClick: (String) -> Unit) {
 @Composable
 private fun FaultCodeCard(code: N54FaultCodes.FaultCode, onClick: () -> Unit) {
     val severityColor = when (code.severity) {
-        "critical" -> Color(0xFFEF4444)
-        "warning" -> Color(0xFFF59E0B)
-        else -> Color(0xFF6B7280)
+        "critical" -> N54Colors.destructive
+        "warning" -> N54Colors.yellow
+        else -> N54Colors.mutedForeground
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+    N54Card(onClick = onClick) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .background(severityColor.copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
+                    .size(40.dp)
+                    .background(severityColor.copy(alpha = 0.18f), RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(code.code.take(2), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = severityColor)
+                Text(
+                    code.code.take(2),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    color = severityColor
+                )
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(code.code, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text(code.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                Text(code.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
+                Text(
+                    code.code,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = severityColor
+                )
+                Text(
+                    code.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    code.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = N54Colors.mutedForeground,
+                    maxLines = 2
+                )
             }
         }
     }
@@ -409,31 +427,45 @@ fun FaultCodeDetailScreen(code: String, onBack: () -> Unit) {
         return
     }
 
+    val severityColor = when (codeData.severity) {
+        "critical" -> N54Colors.destructive
+        "warning" -> N54Colors.yellow
+        else -> N54Colors.mutedForeground
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(N54Colors.background)
             .padding(16.dp)
     ) {
-        TextButton(onClick = onBack) { Text("← Back") }
+        N54BackButton(onBack)
         Spacer(Modifier.height(8.dp))
-        Text(codeData.code, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Black)
-        Text(codeData.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text(
+            codeData.code,
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Black,
+            color = severityColor
+        )
+        Text(
+            codeData.title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold
+        )
         Spacer(Modifier.height(8.dp))
-        AssistChip(onClick = {}, label = { Text(codeData.severity) })
+        N54PriorityBadge(codeData.severity.replaceFirstChar { it.uppercase() }, severityColor)
         Spacer(Modifier.height(12.dp))
         Text(codeData.description, style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(16.dp))
 
-        Text("Symptoms", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        codeData.symptoms.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
-        Spacer(Modifier.height(12.dp))
-
-        Text("Likely Causes", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        codeData.causes.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
-        Spacer(Modifier.height(12.dp))
-
-        Text("Fixes", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        codeData.fixes.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+        DetailSection("Symptoms", codeData.symptoms)
+        DetailSection("Likely Causes", codeData.causes)
+        DetailSection("Fixes", codeData.fixes)
     }
+}
+
+@Composable
+private fun DetailSection(title: String, items: List<String>) {
+    N54SectionHeader(title)
+    items.forEach { N54Bullet(it) }
 }

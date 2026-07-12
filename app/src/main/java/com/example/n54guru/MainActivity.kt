@@ -6,7 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -23,6 +30,9 @@ import com.example.n54guru.knowledge.LogDashboardScreen
 import com.example.n54guru.knowledge.ModGuideScreen
 import com.example.n54guru.protocol.N54DmeLiveDataSource
 import com.example.n54guru.ui.AiPartnerScreen
+import com.example.n54guru.ui.theme.N54GuruTheme
+
+import com.example.n54guru.ui.theme.N54Colors
 
 /**
  * Top-level navigation for the N54 Guru app.
@@ -53,12 +63,19 @@ fun N54GuruApp(source: N54DmeLiveDataSource) {
             TopAppBar(
                 title = { Text("N54 Guru") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = N54Colors.surface,
+                    titleContentColor = N54Colors.primary,
+                    navigationIconContentColor = N54Colors.primary,
+                    actionIconContentColor = N54Colors.primary
                 )
             )
         },
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+            NavigationBar(
+                containerColor = N54Colors.surface,
+                contentColor = N54Colors.primary,
+                tonalElevation = 0.dp
+            ) {
                 val tabs = listOf(
                     Screen.Live,
                     Screen.Codes,
@@ -75,7 +92,14 @@ fun N54GuruApp(source: N54DmeLiveDataSource) {
                             articleDetail = null
                         },
                         icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title, fontSize = 10.sp) }
+                        label = { Text(screen.title, fontSize = 10.sp) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = N54Colors.background,
+                            selectedTextColor = N54Colors.primary,
+                            indicatorColor = N54Colors.primary,
+                            unselectedIconColor = N54Colors.mutedForeground,
+                            unselectedTextColor = N54Colors.mutedForeground
+                        )
                     )
                 }
             }
@@ -125,7 +149,7 @@ class MainActivity : ComponentActivity() {
         source = N54DmeLiveDataSource(this)
 
         setContent {
-            MaterialTheme {
+            N54GuruTheme {
                 N54GuruApp(source)
             }
         }
