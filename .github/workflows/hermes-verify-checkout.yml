@@ -1,0 +1,8 @@
+name: hermes-verify-checkout
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: ls
