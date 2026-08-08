@@ -1,0 +1,7 @@
+name: hermes-verify-minimal
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "minimal workflow runs"
