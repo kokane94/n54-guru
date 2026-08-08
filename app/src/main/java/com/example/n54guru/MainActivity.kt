@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.example.n54guru.knowledge.*
 import com.example.n54guru.protocol.N54DmeLiveDataSource
 import com.example.n54guru.ui.AiPartnerScreen
+import com.example.n54guru.ui.HermesChatScreen
 import com.example.n54guru.ui.theme.N54Colors
 import com.example.n54guru.ui.theme.N54GuruTheme
 
@@ -30,6 +31,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Live : Screen("live", "Live", Icons.Filled.Speed)
     object Logs : Screen("logs", "Logs", Icons.Filled.List)
     object Partner : Screen("partner", "Partner", Icons.Filled.Info)
+    object Hermes : Screen("hermes", "Hermes", Icons.Filled.AutoAwesome)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +43,7 @@ fun N54GuruApp(source: N54DmeLiveDataSource) {
     var modDetail by remember { mutableStateOf<String?>(null) }
     var serviceDetail by remember { mutableStateOf<String?>(null) }
 
-    val tabs = listOf(Screen.Home, Screen.Codes, Screen.Mods, Screen.Service, Screen.Wiki, Screen.Diagnose)
+    val tabs = listOf(Screen.Home, Screen.Codes, Screen.Mods, Screen.Service, Screen.Wiki, Screen.Diagnose, Screen.Hermes)
 
     Scaffold(
         bottomBar = {
@@ -112,6 +114,7 @@ fun N54GuruApp(source: N54DmeLiveDataSource) {
                 currentRoute == Screen.Diagnose.route -> AIDiagnosticsScreen()
                 currentRoute == Screen.Live.route -> LiveDataScreen(source = source, onShowPartner = { currentRoute = Screen.Partner.route })
                 currentRoute == Screen.Logs.route -> LogDashboardScreen(source = source)
+                currentRoute == Screen.Hermes.route -> HermesChatScreen()
             }
         }
     }
