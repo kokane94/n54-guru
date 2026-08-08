@@ -1,0 +1,252 @@
+name: hermes-verify-build-copy
+
+'on':
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Download and setup Gradle directly
+        run: |
+          echo "📥 Downloading Gradle 8.10.2..."
+          cd ${{ github.workspace }}
+          
+          # Download Gradle
+          curl -fsSL -o gradle-8.10.2-bin.zip "https://services.gradle.org/distributions/gradle-8.10.2-bin.zip"
+          
+          # Verify download
+          if [ ! -f "gradle-8.10.2-bin.zip" ]; then
+            echo "❌ Failed to download Gradle"
+            exit 1
+          fi
+          
+          echo "✅ Gradle downloaded successfully"
+          
+          # Unzip it
+          unzip -q gradle-8.10.2-bin.zip
+          
+          # Make gradle executable
+          chmod +x gradle-8.10.2/bin/gradle
+          
+          echo "✅ Gradle extracted and executable"
+
+      - name: Verify Gradle Installation
+        run: |
+          ./gradle-8.10.2/bin/gradle --version
+          echo "✅ Gradle verified!"
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Validate project structure
+        run: |
+          echo "📂 Checking project structure..."
+          ls -la
+          [ -f "settings.gradle" ] && echo "✅ settings.gradle found" || echo "❌ settings.gradle missing"
+          [ -f "build.gradle" ] && echo "✅ build.gradle found" || echo "❌ build.gradle missing"
+          [ -d "app" ] && echo "✅ app directory found" || echo "❌ app directory missing"
+          [ -f "app/build.gradle" ] && echo "✅ app/build.gradle found" || echo "❌ app/build.gradle missing"
+
+      - name: Clean build
+        run: |
+          echo "🧹 Cleaning old builds..."
+          ./gradle-8.10.2/bin/gradle clean
+
+      - name: Build APK (Debug)
+        run: |
+          echo "🔨 Building N54 Guru APK..."
+          ./gradle-8.10.2/bin/gradle assembleDebug --stacktrace --info 2>&1 | tee /tmp/build-debug.log
+          echo "BUILD_EXIT=$?"
+
+      - name: Verify APK was created
+        run: |
+          echo "🔍 Checking for APK..."
+          if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+            echo "✅ APK successfully created!"
+            ls -lh app/build/outputs/apk/debug/app-debug.apk
+          else
+            echo "❌ APK not found! Build may have failed."
+            find . -name "*.apk" -type f -exec ls -lh {} \;
+            exit 1
+          fi
+
+      - name: Get version and timestamp
+        id: metadata
+        run: |
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle 2>/dev/null || echo "2.0.0")
+          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+          BUILD_NUMBER=${{ github.run_number }}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Upload APK as Artifact
+        if: success()
+        uses: actions/upload-artifact@v5
+        with:
+          name: N54-Guru-Debug-APK-${{ steps.metadata.outputs.timestamp }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 90
+
+      - name: Create Release (on main push only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.metadata.outputs.version }}-build-${{ steps.metadata.outputs.build_number }}
+          name: 🚀 N54 Guru v${{ steps.metadata.outputs.version }} - Build #${{ steps.metadata.outputs.build_number }}
+          body: |
+            # 🏎️ N54 Guru APK Build #${{ steps.metadata.outputs.build_number }}
+
+            ✅ **BUILD SUCCESSFUL - READY FOR DOWNLOAD!**
+
+            ## 📋 Build Details
+            - **Version**: v${{ steps.metadata.outputs.version }}
+            - **Build Number**: #${{ steps.metadata.outputs.build_number }}
+            - **Timestamp**: ${{ steps.metadata.outputs.timestamp }}
+            - **Commit**: ${{ github.sha }}
+
+            ## 📱 Installation Instructions
+
+            ### Step 1: Download
+            👇 Download `app-debug.apk` from the assets below
+
+            ### Step 2: Transfer to Phone
+            Transfer the APK file to your Android phone using:
+            - USB cable file transfer
+            - Email
+            - Cloud storage (Google Drive, OneDrive, etc.)
+
+            ### Step 3: Enable Installation from Unknown Sources
+            1. Open Settings on your phone
+            2. Go to Security (or Apps & Notifications)
+            3. Enable "Install from Unknown Sources"
+
+            ### Step 4: Install
+            1. Open the APK file on your phone
+            2. Tap "Install"
+            3. Wait for installation to complete
+
+            ### Step 5: Grant Permissions
+            When you launch the app:
+            - Grant USB permission (for OBD2 adapter)
+            - Grant storage permissions
+            - Grant microphone permission (for voice commentary)
+
+            ### Step 6: Connect and Test
+            1. Connect your BMW OBD2 K-CAN adapter via USB OTG cable
+            2. Launch N54 Guru
+            3. App will auto-detect the OBD2 adapter
+            4. Start diagnosing! 🚗
+
+            ## 🎯 Features Ready for Testing
+            - ✅ Real-time N54 Engine Diagnostics
+            - ✅ Transmission Monitoring
+            - ✅ Convertible Roof Control
+            - ✅ AI Predictive Failure Detection
+            - ✅ Voice Commentary (12 Regional Accents)
+            - ✅ Smart Part Finder
+            - ✅ Data Logging & Export
+            - ✅ OBD2 K-CAN Support
+
+            ## 🔧 Debug Build Info
+            - This is a **debug APK** (unsigned)
+            - Perfect for testing on your Android phone
+            - No release signing certificate required
+
+            ---
+            *Built automatically by GitHub Actions*
+          draft: false
+          prerelease: false
+          files: app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Success Summary
+        if: success()
+        run: |
+          echo ""
+          echo "============================================"
+          echo "✅ BUILD COMPLETED SUCCESSFULLY!"
+          echo "============================================"
+          echo ""
+          echo "📦 APK READY FOR DOWNLOAD"
+          echo ""
+          echo "📥 Download Options:"
+          echo "  1️⃣  GitHub Actions Artifacts Tab"
+          echo "  2️⃣  GitHub Releases (Latest Release)"
+          echo ""
+          echo "📊 APK Details:"
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+          echo ""
+          echo "🔗 Direct Links:"
+          echo "  Releases: https://github.com/${{ github.repository }}/releases/latest"
+          echo "  Actions:  https://github.com/${{ github.repository }}/actions"
+          echo ""
+          echo "🚗 Next Steps:"
+          echo "  1. Download app-debug.apk"
+          echo "  2. Transfer to Android phone"
+          echo "  3. Install APK"
+          echo "  4. Connect OBD2 adapter"
+          echo "  5. Launch and test!"
+          echo ""
+          echo "============================================"
+          echo ""
+
+      - name: Build Failure Debug Info
+        if: failure()
+        run: |
+          echo ""
+          echo "============================================"
+          echo "❌ BUILD FAILED - DEBUG INFORMATION"
+          echo "============================================"
+          echo ""
+          echo "Java Version:"
+          java -version
+          echo ""
+          echo "Project Structure:"
+          ls -la
+          echo ""
+          echo "App Directory:"
+          ls -la app/
+          echo ""
+          echo "Build Output:"
+          if [ -d "app/build" ]; then
+            find app/build -type f -name "*.apk" 2>/dev/null | head -5 || echo "No APK files found"
+          else
+            echo "No build directory found"
+          fi
+          echo ""
+          echo "Last 300 lines of build log:"
+          if [ -f /tmp/build-debug.log ]; then
+            tail -300 /tmp/build-debug.log
+          else
+            echo "No build log captured"
+          fi
+          echo ""
+          echo "Kotlin compile errors (e: prefix):"
+          if [ -f /tmp/build-debug.log ]; then
+            grep -E "^(e:|w:).*\.kt" /tmp/build-debug.log | head -100 || echo "no .kt errors found in log"
+          fi
+          echo ""
+          echo "============================================"
+          echo ""
