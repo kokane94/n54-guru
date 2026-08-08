@@ -1,0 +1,16 @@
+name: hermes-verify-artifact
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - run: echo "hi" > /tmp/test.txt
+      - uses: actions/upload-artifact@v5
+        with:
+          name: test-artifact
+          path: /tmp/test.txt
