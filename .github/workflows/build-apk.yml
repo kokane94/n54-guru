@@ -110,7 +110,7 @@ jobs:
 
       - name: Create Release (on main push only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.metadata.outputs.version }}-build-${{ steps.metadata.outputs.build_number }}
           name: 🚀 N54 Guru v${{ steps.metadata.outputs.version }} - Build #${{ steps.metadata.outputs.build_number }}
