@@ -4,29 +4,19 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Outer hex frame (N54 badge feel) -->
-    <path
-        android:fillColor="#FF6A2C"
-        android:pathData="M54,16 L82,30 L82,66 L54,80 L26,66 L26,30 Z" />
-
-    <!-- Inner dark area -->
+    <!-- Solid black background fills the safe zone -->
     <path
         android:fillColor="#0B0E14"
-        android:pathData="M54,22 L78,34 L78,62 L54,74 L30,62 L30,34 Z" />
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
 
-    <!-- Turbofan/turbine ring (4 blades) -->
+    <!-- Outer orange ring (turbofan housing) -->
     <path
         android:fillColor="#FF6A2C"
-        android:pathData="M54,40 m-18,0 a18,18 0 1,0 36,0 a18,18 0 1,0 -36,0 M54,46 m-12,0 a12,12 0 1,1 24,0 a12,12 0 1,1 -24,0"
+        android:pathData="M54,54 m-34,0 a34,34 0 1,0 68,0 a34,34 0 1,0 -68,0 M54,54 m-28,0 a28,28 0 1,1 56,0 a28,28 0 1,1 -56,0"
         android:fillType="evenOdd" />
 
-    <!-- N54 monogram in the center -->
+    <!-- Bold white N monogram, centered in the inner area -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M44,52 L48,52 L56,62 L56,52 L60,52 L60,68 L56,68 L48,58 L48,68 L44,68 Z" />
-
-    <!-- Small "5" subscript for N54 -->
-    <path
-        android:fillColor="#FFB300"
-        android:pathData="M62,65 L70,65 L70,67 L64,67 L64,69 L70,69 L70,71 L62,71 Z" />
+        android:pathData="M40,76 L48,76 L60,60 L60,76 L68,76 L68,32 L60,32 L48,48 L48,32 L40,32 Z" />
 </vector>
