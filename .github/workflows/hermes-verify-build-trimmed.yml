@@ -24,3 +24,10 @@ jobs:
           distribution: 'temurin'
       - name: Echo
         run: echo "trimmed works"
+  # nothing - file ends here, but actually we need to add a step to jobs.build
+      - name: Upload test
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: test-upload
+          path: /tmp/nonexistent
